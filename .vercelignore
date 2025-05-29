@@ -1,0 +1,92 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Python-related
+*.py
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+ENV/
+*.so
+pneumonia-ml/
+backend/
+uploads/
+output/
+inference_output/
+best_model.pth
+requirements.txt
+requirements copy.txt
+app.py
+build.sh
+start.sh
+model.py
+
+# Testing
+/coverage
+
+# Local env files except for production
+.env*.local
+!.env.production
+
+# Misc
+.DS_Store
+*.pem
+.git/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Typescript
+*.tsbuildinfo
+
+# Development files
+.git
+.github
+node_modules
+.next/cache
+.next/cache/webpack
+
+# Next.js build cache
+.next/cache/
+**/.next/cache/**
+
+# Large assets that should be hosted elsewhere
+*.weights
+*.h5
+*.onnx
+*.pb
+*.pth
+*.pt
+*.bin
+*.tar.gz
+best_model.pth
+
+# Exclude model directories if they exist
+pneumonia-ml/
+output/
+models/
+
+# Development and test files
+/__tests__
+/cypress
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+*.log
+
+# Prisma generated files - Windows specific DLLs are large
+generated/prisma/query_engine-windows.dll.node*
+generated/prisma/libquery_engine-*
+
+# Large image assets - but keep the bg images
+public/large-assets/
+# DO NOT exclude essential UI images
+# public/images/bg.png
+# public/images/bg2.jpg 

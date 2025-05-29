@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/.next/cache/
+**/.next/cache/**
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# large model files
+*.pth
+*.weights
+*.h5
+*.onnx
+*.pb
+*.pt
+*.bin
+
+# prisma generated files
+**/generated/prisma/query_engine-windows*
+**/generated/prisma/libquery_engine*
+
+# large assets
+/public/large-assets/
+/pneumonia-ml
+
+# Python
+__pycache__/
+*.py[cod]
+
+# env files
+.env.production
+.env.local
+.env.development
+.env.test
