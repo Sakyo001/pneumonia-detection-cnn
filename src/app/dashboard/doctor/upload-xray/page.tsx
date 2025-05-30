@@ -37,7 +37,7 @@ type DoctorInfo = {
 };
 
 // Update the API URL for X-ray analysis
-const API_URL = "https://pneumonia-detection-api-eyq4.onrender.com";
+const API_URL = "https://pneumo-model.onrender.com";
 export default function UploadXrayPage() {
   const styleRef = useRef<HTMLStyleElement | null>(null);
   
@@ -621,7 +621,7 @@ export default function UploadXrayPage() {
                     className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md cursor-pointer hover:bg-indigo-200 border border-indigo-200 transition-colors"
                     onClick={(e) => {
                       e.preventDefault();
-                      window.open('https://pneumonia-detection-api-eyq4.onrender.com/predict', '_blank');
+                      window.open('https://pneumo-model.onrender.com/predict', '_blank');
                     }}
                   >
                     View API
