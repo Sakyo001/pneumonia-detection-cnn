@@ -108,8 +108,8 @@ export default function AllScansPage() {
   }>({ key: 'date', direction: 'descending' });
   const [isBrowser, setIsBrowser] = useState(false);
 
-  // Ensure ITEMS_PER_PAGE is never zero
-  const ITEMS_PER_PAGE = 8;
+  // Ensure ITEMS_PER_PAGE is set to 10 for correct pagination
+  const ITEMS_PER_PAGE = 10;
   
   // Set isBrowser flag once component mounts to avoid hydration issues
   useEffect(() => {

@@ -212,7 +212,7 @@ export default function PneumoniaManagement() {
                     {record.pneumonia_type || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {record.confidence_score ? `${(record.confidence_score).toFixed(1)}%` : "N/A"}
+                    {record.confidence_score !== undefined && record.confidence_score !== null ? `${Number(record.confidence_score).toFixed(2)}%` : "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {new Date(record.createdAt).toLocaleDateString()}
@@ -268,8 +268,8 @@ export default function PneumoniaManagement() {
                     <input
                       type="text"
                       value={currentRecord.reference_number}
-                      onChange={(e) => setCurrentRecord({ ...currentRecord, reference_number: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      readOnly
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black bg-gray-100 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -280,8 +280,8 @@ export default function PneumoniaManagement() {
                     </label>
                     <select
                       value={currentRecord.pneumonia_type}
-                      onChange={(e) => setCurrentRecord({ ...currentRecord, pneumonia_type: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      disabled
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black bg-gray-100 cursor-not-allowed"
                     >
                       <option value="">None</option>
                       <option value="BACTERIAL">Bacterial</option>
@@ -296,8 +296,8 @@ export default function PneumoniaManagement() {
                     </label>
                     <select
                       value={currentRecord.severity}
-                      onChange={(e) => setCurrentRecord({ ...currentRecord, severity: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      disabled
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black bg-gray-100 cursor-not-allowed"
                     >
                       <option value="">None</option>
                       <option value="MILD">Mild</option>
@@ -314,13 +314,10 @@ export default function PneumoniaManagement() {
                       type="number"
                       min="0"
                       max="100"
-                      step="0.1"
-                      value={currentRecord.confidence_score * 100}
-                      onChange={(e) => setCurrentRecord({ 
-                        ...currentRecord, 
-                        confidence_score: parseFloat(e.target.value) / 100 
-                      })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      step="0.01"
+                      value={Number(currentRecord.confidence_score).toFixed(2)}
+                      readOnly
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black bg-gray-100 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -332,7 +329,7 @@ export default function PneumoniaManagement() {
                     <textarea
                       value={currentRecord.recommended_action}
                       onChange={(e) => setCurrentRecord({ ...currentRecord, recommended_action: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
                       rows={3}
                     />
                   </div>
