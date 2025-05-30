@@ -53,6 +53,7 @@ next-env.d.ts
 # large assets
 /public/large-assets/
 /pneumonia-ml
+/torchxrayvision
 
 # Python
 __pycache__/
