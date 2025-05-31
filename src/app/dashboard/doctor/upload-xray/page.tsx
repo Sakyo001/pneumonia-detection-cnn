@@ -37,7 +37,7 @@ type DoctorInfo = {
 };
 
 // Update the API URL for X-ray analysis
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://apimodel-9f5g.onrender.com";
 export default function UploadXrayPage() {
   const styleRef = useRef<HTMLStyleElement | null>(null);
   
@@ -424,7 +424,7 @@ export default function UploadXrayPage() {
       </header>
 
       {/* Main content */}
-      <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-10">
+      <div className="flex-grow w-full max-w-full overflow-x-auto px-2 sm:px-6 py-10">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload X-Ray for Analysis</h2>
         {/* Display model accuracy */}
         <div className="text-xs text-gray-500 mb-2">Model accuracy: {accuracy ? `${accuracy}%` : 'N/A'}</div>
@@ -452,7 +452,7 @@ export default function UploadXrayPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
           {!analysisResult ? (
             <form onSubmit={handleUpload} suppressHydrationWarning>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 w-full max-w-full overflow-x-auto">
                 <div>
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Patient Information</h3>
                   <div className="space-y-4">
@@ -621,7 +621,7 @@ export default function UploadXrayPage() {
                     className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md cursor-pointer hover:bg-indigo-200 border border-indigo-200 transition-colors"
                     onClick={(e) => {
                       e.preventDefault();
-                      window.open('http://127.0.0.1:8000', '_blank');
+                      window.open('https://apimodel-9f5g.onrender.com', '_blank');
                     }}
                   >
                     View API
