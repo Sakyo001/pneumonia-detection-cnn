@@ -51,9 +51,7 @@ next-env.d.ts
 **/generated/prisma/libquery_engine*
 
 # large assets
-/public/large-assets/
-/pneumonia-ml
-/torchxrayvision
+
 
 # Python
 __pycache__/
