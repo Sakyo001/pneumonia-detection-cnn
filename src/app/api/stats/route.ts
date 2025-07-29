@@ -64,6 +64,10 @@ export async function GET(req: NextRequest) {
       where: {
         patient: {
           doctorId: userId
+        },
+        // Exclude validation results (COVID, TB, NON_XRAY) from recent scans
+        result: {
+          notIn: ['COVID', 'TB', 'NON_XRAY']
         }
       },
       select: {

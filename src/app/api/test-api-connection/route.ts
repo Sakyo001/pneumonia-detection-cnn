@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pneumonia-detection-api-eyq4.onrender.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://efficientnetb0-validation.onrender.com';
     console.log(`Testing connection to API: ${apiUrl}`);
     
     // First try health check endpoint
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error.message || 'Unknown error',
-      apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://pneumonia-detection-api-eyq4.onrender.com',
+      apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://efficientnetb0-validation.onrender.com',
     }, { status: 500 });
   }
 } 

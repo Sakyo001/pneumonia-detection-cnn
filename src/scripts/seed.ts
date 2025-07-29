@@ -21,7 +21,6 @@ async function main() {
     data: {
       name: 'Jane Doe',
       referenceNumber: `PT-${timestamp}-${random}`,
-      dateOfBirth: new Date('1990-01-01'),
       doctorId: doctor.id,
     },
   });

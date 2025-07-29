@@ -128,7 +128,6 @@ export async function seedUsers() {
         data: {
           name: 'John Doe',
           referenceNumber: 'PAT-001',
-          dateOfBirth: new Date('1985-05-15'),
           doctorId: (await prisma.user.findFirst({ 
             where: { doctorId: 'DOC12345' } 
           }))?.id || '',
@@ -140,7 +139,6 @@ export async function seedUsers() {
         data: {
           name: 'Maria Garcia',
           referenceNumber: 'PAT-002',
-          dateOfBirth: new Date('1992-08-21'),
           doctorId: (await prisma.user.findFirst({ 
             where: { doctorId: 'DOC67890' } 
           }))?.id || '',

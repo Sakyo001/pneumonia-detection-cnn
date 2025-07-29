@@ -13,6 +13,7 @@ env/
 ENV/
 *.so
 pneumonia-ml/
+pneumonia-ml-validation/
 backend/
 uploads/
 output/

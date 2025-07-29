@@ -228,6 +228,43 @@ function DonutChart({ normalCount, pneumoniaCount }: { normalCount: number; pneu
   );
 }
 
+// Simple Bar Chart Component
+function BarChart({ title, data }: { title: string; data: { name: string; value: number }[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div>
+        <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
+        <p className="text-gray-500 text-sm">No data available.</p>
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(...data.map(d => d.value), 0);
+
+  return (
+    <div>
+      <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
+      <div className="space-y-3">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center">
+            <div className="w-24 text-sm text-gray-600 truncate pr-2">{item.name}</div>
+            <div className="flex-1 bg-gray-200 rounded-full h-5">
+              <motion.div
+                className="bg-indigo-500 h-5 rounded-full flex items-center justify-end pr-2"
+                initial={{ width: 0 }}
+                animate={{ width: `${(item.value / maxValue) * 100}%` }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <span className="text-white text-xs font-medium">{item.value}</span>
+              </motion.div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Recent Scans Table Component
 function RecentScansTable({ scans }: { scans: any[] }) {
   return (
@@ -289,7 +326,38 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
     todayScans: 0,
     recentScans: [] as any[]
   });
+  const [chartsData, setChartsData] = useState<{
+    genderDistribution: any[];
+    ageDistribution: any[];
+    locationDistribution: any[];
+  } | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
+  const [isChartsLoading, setIsChartsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'all-scans' | 'upload-xray' | 'patient-records'>('dashboard');
+  
+  const [patientRecords, setPatientRecords] = useState<any[]>([]);
+  const [isPatientsLoading, setIsPatientsLoading] = useState(false);
+  const [patientsError, setPatientsError] = useState<string | null>(null);
+
+  // Add state for selected patient and their scans
+  const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+  const [patientScans, setPatientScans] = useState<any[]>([]);
+  const [isScansLoading, setIsScansLoading] = useState(false);
+  const [scansError, setScansError] = useState<string | null>(null);
+  const [scanPage, setScanPage] = useState(1);
+  const [scanTotalPages, setScanTotalPages] = useState(1);
+  const SCANS_PER_PAGE = 10;
+  const [scanSort, setScanSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+
+  // Add state for all scans pagination and sorting
+  const [allScans, setAllScans] = useState<any[]>([]);
+  const [isAllScansLoading, setIsAllScansLoading] = useState(false);
+  const [allScansError, setAllScansError] = useState<string | null>(null);
+  const [allScansPage, setAllScansPage] = useState(1);
+  const [allScansTotalPages, setAllScansTotalPages] = useState(1);
+  const ALL_SCANS_PER_PAGE = 10;
+  const [allScansSort, setAllScansSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
   
   // Fetch dashboard data
   const fetchData = async () => {
@@ -330,6 +398,22 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
       setIsLoading(false);
     }
   };
+
+  const fetchChartsData = async () => {
+    setIsChartsLoading(true);
+    try {
+      const response = await fetch('/api/dashboard/charts-data');
+      if (!response.ok) throw new Error('Failed to fetch charts data');
+      const result = await response.json();
+      if (result.success) {
+        setChartsData(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching charts data:", error);
+    } finally {
+      setIsChartsLoading(false);
+    }
+  };
   
   // Generate mock data for demo/fallback purposes
   const generateMockData = () => {
@@ -364,7 +448,59 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
 
   useEffect(() => {
     fetchData();
+    fetchChartsData();
   }, []);
+  
+  useEffect(() => {
+    if (activeTab === 'patient-records') {
+      setIsPatientsLoading(true);
+      setPatientsError(null);
+      fetch('/api/patients')
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to fetch patients');
+          const data = await res.json();
+          setPatientRecords(data.patients || []);
+        })
+        .catch((err) => {
+          setPatientsError('Could not load patient records.');
+        })
+        .finally(() => setIsPatientsLoading(false));
+    }
+  }, [activeTab]);
+
+  // Fetch scans for selected patient
+  useEffect(() => {
+    if (selectedPatient) {
+      setIsScansLoading(true);
+      setScansError(null);
+      fetch(`/api/scans/all?patientId=${selectedPatient.id}&page=${scanPage}&limit=${SCANS_PER_PAGE}&sortBy=${scanSort.key}&sortOrder=${scanSort.direction}`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to fetch scans');
+          const result = await res.json();
+          setPatientScans(result.data.scans || []);
+          setScanTotalPages(result.data.pagination?.totalPages || 1);
+        })
+        .catch(() => setScansError('Could not load scans.'))
+        .finally(() => setIsScansLoading(false));
+    }
+  }, [selectedPatient, scanPage, scanSort]);
+
+  // Fetch all scans for doctor
+  useEffect(() => {
+    if (activeTab === 'patient-records') {
+      setIsAllScansLoading(true);
+      setAllScansError(null);
+      fetch(`/api/scans/all?page=${allScansPage}&limit=${ALL_SCANS_PER_PAGE}&sortBy=${allScansSort.key}&sortOrder=${allScansSort.direction}`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to fetch scans');
+          const result = await res.json();
+          setAllScans(result.data.scans || []);
+          setAllScansTotalPages(result.data.pagination?.totalPages || 1);
+        })
+        .catch(() => setAllScansError('Could not load scans.'))
+        .finally(() => setIsAllScansLoading(false));
+    }
+  }, [activeTab, allScansPage, allScansSort]);
   
   const handleLogout = async () => {
     try {
@@ -403,8 +539,38 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
         </div>
       </header>
 
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'dashboard'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('patient-records')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'patient-records'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Patient Records
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Main content */}
       <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-10">
+        {activeTab === 'dashboard' && (
+          <>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Pneumonia Detection Dashboard</h2>
           <Link 
@@ -417,7 +583,6 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
             Upload New X-Ray
           </Link>
         </div>
-        
         <AnimatePresence>
           {isLoading ? (
             <motion.div 
@@ -449,7 +614,6 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   percentage={8}
                   increasing={true}
                 />
-                
                 <StatCard 
                   title="Pneumonia Cases" 
                   value={dashboardData.pneumoniaCases} 
@@ -462,7 +626,6 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   percentage={5}
                   increasing={true}
                 />
-                
                 <StatCard 
                   title="Normal Cases" 
                   value={dashboardData.normalCases} 
@@ -475,7 +638,6 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   percentage={12}
                   increasing={true}
                 />
-                
                 <StatCard 
                   title="Today's Scans" 
                   value={dashboardData.todayScans} 
@@ -487,7 +649,24 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   color="yellow"
                 />
               </div>
-              
+                   {/* Demographic Charts Section */}
+                   <div className="mb-8">
+                    {isChartsLoading ? (
+                      <div className="flex justify-center items-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div></div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+                          <BarChart title="Cases by Gender" data={chartsData?.genderDistribution || []} />
+                        </motion.div>
+                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+                          <BarChart title="Cases by Age Group" data={chartsData?.ageDistribution || []} />
+                        </motion.div>
+                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
+                          <BarChart title="Top 10 Locations (Region)" data={chartsData?.locationDistribution || []} />
+                        </motion.div>
+                      </div>
+                    )}
+                  </div>
               {/* Charts and Tables Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Donut Chart */}
@@ -503,7 +682,6 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                     pneumoniaCount={dashboardData.pneumoniaCases} 
                   />
                 </motion.div>
-                
                 {/* Recent Scans */}
                 <motion.div 
                   className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-50 p-6"
@@ -513,16 +691,102 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                 >
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-medium text-gray-800">Recent X-Ray Scans</h3>
-                    <Link href="/dashboard/doctor/all-scans" className="text-sm text-indigo-600 hover:text-indigo-800">
-                      View all
-                    </Link>
                   </div>
                   <RecentScansTable scans={dashboardData.recentScans} />
                 </motion.div>
               </div>
+                 
             </motion.div>
           )}
         </AnimatePresence>
+          </>
+        )}
+        {activeTab === 'all-scans' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">All X-Ray Scans</h2>
+            <p className="text-gray-600">[All Scans Table Placeholder]</p>
+          </div>
+        )}
+        {activeTab === 'upload-xray' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Upload X-Ray</h2>
+            <p className="text-gray-600">[Upload X-Ray Form Placeholder]</p>
+          </div>
+        )}
+        {activeTab === 'patient-records' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Patient Records</h2>
+            {/* All Scans Table */}
+            <div className="mb-10">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">All X-Ray Scans</h3>
+              {isAllScansLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+                </div>
+              ) : allScansError ? (
+                <div className="text-red-500 text-center py-8">{allScansError}</div>
+              ) : allScans.length === 0 ? (
+                <div className="text-gray-500 text-center py-8">No scans found.</div>
+              ) : (
+                <div className="overflow-x-auto w-full rounded-lg border border-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'patientName', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
+                          Patient
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'date', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'result', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
+                          Result
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'confidence', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
+                          Confidence
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference #</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {allScans.map((scan) => (
+                        <tr key={scan.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{scan.patientName}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{scan.date ? new Date(scan.date).toLocaleDateString() : ''}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${scan.result === 'Pneumonia' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{scan.result}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{(scan.confidence > 1 ? (scan.confidence / 100).toFixed(2) : scan.confidence.toFixed(2))}%</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{scan.referenceNumber}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <Link href={`/dashboard/doctor/scans/${scan.id}`} className="text-indigo-600 hover:text-indigo-900">View</Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Pagination Controls: Page Numbers Only */}
+                  <div className="flex justify-center items-center mt-4 gap-2">
+                    {Array.from({ length: allScansTotalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setAllScansPage(page)}
+                        className={`px-3 py-1.5 rounded-md border text-sm font-medium transition-colors ${
+                          allScansPage === page
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-indigo-50'
+                        }`}
+                        disabled={allScansPage === page}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Footer */}

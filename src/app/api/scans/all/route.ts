@@ -33,6 +33,10 @@ export async function GET(req: NextRequest) {
     const whereCondition: any = {
       patient: {
         doctorId: userId
+      },
+      // Exclude validation results (COVID, TB, NON_XRAY) from scans list
+      result: {
+        notIn: ['COVID', 'TB', 'NON_XRAY']
       }
     };
     
@@ -91,7 +95,7 @@ export async function GET(req: NextRequest) {
         }
       },
       orderBy: {
-        [sortBy]: sortOrder === 'asc' ? 'asc' : 'desc'
+        [sortBy === 'date' ? 'createdAt' : sortBy]: sortOrder === 'asc' ? 'asc' : 'desc'
       },
       skip,
       take: limit
@@ -111,6 +115,10 @@ export async function GET(req: NextRequest) {
       where: {
         patient: {
           doctorId: userId
+        },
+        // Exclude validation results from statistics
+        result: {
+          notIn: ['COVID', 'TB', 'NON_XRAY']
         }
       }
     });
@@ -128,6 +136,10 @@ export async function GET(req: NextRequest) {
         },
         createdAt: {
           gte: today
+        },
+        // Exclude validation results from today's count
+        result: {
+          notIn: ['COVID', 'TB', 'NON_XRAY']
         }
       }
     });

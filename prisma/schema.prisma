@@ -26,12 +26,17 @@ model Patient {
   id              String     @id @default(uuid())
   name            String
   referenceNumber String     @unique
-  dateOfBirth     DateTime
+  age             Int?
+  gender          String?
   doctorId        String
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   doctor          User       @relation("DoctorToPatient", fields: [doctorId], references: [id])
   xrayScans       XrayScan[]
+  location        String?
+  region          String?
+  city            String?
+  barangay        String?
 }
 
 model XrayScan {
@@ -50,9 +55,14 @@ model XrayScan {
   recommendedAction String?
   severity          String?
   letter            String?
+  symptoms          String?       // JSON array of reported symptoms
   metadata          ScanMetadata?
   doctor            User          @relation("DoctorToScan", fields: [doctorId], references: [id])
   patient           Patient       @relation(fields: [patientId], references: [id])
+  location          String?
+  region            String?
+  city              String?
+  barangay          String?
 }
 
 model ScanMetadata {

@@ -22,8 +22,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        referenceNumber: true,
-        dateOfBirth: true
+        referenceNumber: true
       },
       orderBy: {
         name: 'asc'

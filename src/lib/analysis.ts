@@ -49,7 +49,12 @@ interface ParsedResult {
 export interface AnalysisResult {
   referenceNumber: string;
   diagnosis: string;
+  prediction?: string; // Add the prediction property
   confidence: number;
+  pneumoniaType?: string | null;
+  severity?: string | null;
+  severityDescription?: string | null;
+  recommendedAction: string;
   imageUrl?: string;
   cloudinaryPublicId?: string;
   date: string;
@@ -87,6 +92,7 @@ function normalizeResult(result: ParsedResult): AnalysisResult {
     referenceNumber: '',
     diagnosis: result.diagnosis,
     confidence: result.confidence,
+    recommendedAction: result.recommendedAction,
     date: new Date().toISOString(),
     modelInfo: {
       name: 'EfficientNet',
@@ -205,7 +211,7 @@ export async function analyzeXrayImage(
   
   try {
     // Get the API URL from environment variables
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pneumonia-detection-api-eyq4.onrender.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://efficientnetb0-validation.onrender.com';
     console.log(`Using API URL: ${apiUrl}`);
 
     // Create a FormData object for the file upload
@@ -255,10 +261,10 @@ export async function analyzeXrayImage(
     }
     
     // Make the API request
-    console.log(`Sending request to ${apiUrl}/predict/`);
+    console.log(`Sending request to ${apiUrl}/predict`);
     const startTime = Date.now();
     
-    const response = await fetch(`${apiUrl}/predict/`, {
+    const response = await fetch(`${apiUrl}/predict`, {
       method: 'POST',
       body: formData,
       // Don't set Content-Type header, as the browser will set it with the proper boundary string
@@ -287,6 +293,66 @@ export async function analyzeXrayImage(
     const prediction = await response.json();
     console.log('API Response:', prediction);
     
+    // Handle both old and new API response formats
+    const predictionResult = prediction.prediction || prediction.diagnosis || 'Unknown';
+    const confidence = prediction.confidence || 0;
+    
+    // Map the multi-class predictions to the expected format
+    let diagnosis: string;
+    let pneumoniaType: string | null = null;
+    let severity: string | null = null;
+    let severityDescription: string | null = null;
+    let recommendedAction: string;
+    
+    // Handle multi-class predictions
+    if (predictionResult === "BACTERIAL_PNEUMONIA" || predictionResult === "VIRAL_PNEUMONIA") {
+      diagnosis = "Pneumonia";
+      pneumoniaType = predictionResult === "BACTERIAL_PNEUMONIA" ? "Bacterial" : "Viral";
+      
+      // Determine severity based on confidence
+      if (confidence < 80) {
+        severity = "Mild";
+        severityDescription = "The pneumonia appears to be in early stages with minimal lung involvement.";
+        recommendedAction = "Outpatient treatment with oral antibiotics is recommended. Follow up in 2-3 days.";
+      } else if (confidence < 90) {
+        severity = "Moderate";
+        severityDescription = "The pneumonia shows significant lung involvement but without severe complications.";
+        recommendedAction = "Consider short hospitalization or close outpatient monitoring. IV antibiotics may be necessary.";
+      } else {
+        severity = "Severe";
+        severityDescription = "The pneumonia shows extensive lung involvement with possible complications.";
+        recommendedAction = "Immediate hospitalization required. IV antibiotics, oxygen therapy, and close monitoring recommended.";
+      }
+    } else if (predictionResult === "NORMAL") {
+      diagnosis = "Normal";
+      recommendedAction = "No action required. Regular check-up schedule should be maintained.";
+    } else if (predictionResult === "NON_XRAY" || predictionResult === "COVID" || predictionResult === "TB") {
+      diagnosis = predictionResult;
+      recommendedAction = "Further evaluation required. This image may not be suitable for pneumonia analysis.";
+    } else {
+      // Fallback for old format or unknown predictions
+      diagnosis = predictionResult;
+      if (diagnosis === "Pneumonia") {
+        pneumoniaType = confidence > 85 ? "Bacterial" : "Viral";
+        
+        if (confidence < 80) {
+          severity = "Mild";
+          severityDescription = "The pneumonia appears to be in early stages with minimal lung involvement.";
+          recommendedAction = "Outpatient treatment with oral antibiotics is recommended. Follow up in 2-3 days.";
+        } else if (confidence < 90) {
+          severity = "Moderate";
+          severityDescription = "The pneumonia shows significant lung involvement but without severe complications.";
+          recommendedAction = "Consider short hospitalization or close outpatient monitoring. IV antibiotics may be necessary.";
+        } else {
+          severity = "Severe";
+          severityDescription = "The pneumonia shows extensive lung involvement with possible complications.";
+          recommendedAction = "Immediate hospitalization required. IV antibiotics, oxygen therapy, and close monitoring recommended.";
+        }
+      } else {
+        recommendedAction = "No action required. Regular check-up schedule should be maintained.";
+      }
+    }
+    
     // If we have an image and we're not in mock mode, upload to Cloudinary
     const imageFile = imageData instanceof File ? imageData : null;
     if (imageFile && !options?.useMock) {
@@ -314,8 +380,13 @@ export async function analyzeXrayImage(
       
     return {
       referenceNumber: patientInfo?.referenceNumber || '',
-      diagnosis: prediction.diagnosis || 'Unknown',
-      confidence: prediction.confidence || 0,
+      diagnosis: diagnosis,
+      prediction: predictionResult, // Include the original prediction for frontend
+      confidence: confidence,
+      pneumoniaType: pneumoniaType,
+      severity: severity,
+      severityDescription: severityDescription,
+      recommendedAction: recommendedAction,
       imageUrl: prediction.imageUrl || '',
       cloudinaryPublicId: prediction.cloudinaryPublicId,
       date: new Date().toISOString(),
@@ -396,10 +467,42 @@ export function generateMockPrediction(
     confidence = 85;
   }
   
+  // Generate detailed analysis fields
+  let pneumoniaType: string | null = null;
+  let severity: string | null = null;
+  let severityDescription: string | null = null;
+  let recommendedAction: string;
+  
+  if (isPositive) {
+    // Pneumonia case
+    pneumoniaType = confidence > 85 ? "Bacterial" : "Viral";
+    
+    if (confidence < 80) {
+      severity = "Mild";
+      severityDescription = "The pneumonia appears to be in early stages with minimal lung involvement.";
+      recommendedAction = "Outpatient treatment with oral antibiotics is recommended. Follow up in 2-3 days.";
+    } else if (confidence < 90) {
+      severity = "Moderate";
+      severityDescription = "The pneumonia shows significant lung involvement but without severe complications.";
+      recommendedAction = "Consider short hospitalization or close outpatient monitoring. IV antibiotics may be necessary.";
+    } else {
+      severity = "Severe";
+      severityDescription = "The pneumonia shows extensive lung involvement with possible complications.";
+      recommendedAction = "Immediate hospitalization required. IV antibiotics, oxygen therapy, and close monitoring recommended.";
+    }
+  } else {
+    // Normal case
+    recommendedAction = "No action required. Regular check-up schedule should be maintained.";
+  }
+  
   return {
     referenceNumber: seed || '',
     diagnosis: isPositive ? "Pneumonia" : "Normal",
     confidence: confidence,
+    pneumoniaType: pneumoniaType,
+    severity: severity,
+    severityDescription: severityDescription,
+    recommendedAction: recommendedAction,
     date: new Date().toISOString(),
     modelInfo: {
       name: "Mock Model",

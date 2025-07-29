@@ -45,7 +45,6 @@ export async function POST(request: Request) {
           data: {
             name: data.patientName,
             referenceNumber: `PAT-${Date.now().toString().slice(-6)}`,
-            dateOfBirth,
             doctorId: user.id
           }
         });

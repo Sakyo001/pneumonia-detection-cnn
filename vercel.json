@@ -4,7 +4,7 @@
   "cleanUrls": true,
   "regions": ["iad1"],
   "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "headers": [
     {
@@ -46,7 +46,7 @@
   "env": {
     "NODE_ENV": "production",
     "NODE_OPTIONS": "--max-old-space-size=3072",
-    "NEXT_PUBLIC_API_URL": "https://pneumonia-detection-bi09.onrender.com",
+    "NEXT_PUBLIC_API_URL": "https://efficientnetb0-validation.onrender.com",
     "VERCEL_FORCE_NO_BUILD_CACHE": "1"
   }
 } 

@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+"always apply the code directly to the context file"
+
+- You can @ files here
+- You can use markdown but dont have to
