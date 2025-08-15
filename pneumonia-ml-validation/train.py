@@ -9,13 +9,18 @@ import numpy as np
 import time
 from copy import deepcopy
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type=str, required=True, help='Path to dataset folder containing train, val, test')
+args = parser.parse_args()
+
+data_dir = args.data_dir
 # Set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 # Data directories
-data_dir = os.path.dirname(os.path.abspath(__file__))
 train_dir = os.path.join(data_dir, 'train')
 val_dir = os.path.join(data_dir, 'val')
 test_dir = os.path.join(data_dir, 'test')
