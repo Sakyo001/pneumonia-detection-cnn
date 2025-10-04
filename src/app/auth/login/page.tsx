@@ -103,12 +103,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Help Section */}
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-gray-600">
-                Need help? <a href="#" className="text-indigo-600 hover:text-indigo-800">Contact Support</a>
-              </p>
-            </div>
+      
           </div>
         </div>
       </div>
