@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface PatientInfoFormProps {
   patientName: string;
@@ -48,46 +49,82 @@ const PatientInfoForm: React.FC<PatientInfoFormProps> = ({
   selectedCityCode, setSelectedCityCode,
   barangays, selectedBarangay, setSelectedBarangay
 }) => (
-  <div>
-    <h3 className="text-lg font-medium text-gray-800 mb-4">Patient Information</h3>
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="patientName" className="block text-sm font-medium text-gray-700 mb-1">
-          Patient Name
-        </label>
+  <div className="space-y-6">
+    {/* Reference Number Badge */}
+    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-700">Reference Number</span>
+        <div className="flex items-center gap-2">
+          <code className="text-lg font-bold bg-white px-4 py-2 rounded-lg text-indigo-600 border border-indigo-200 shadow-sm">
+            {referenceNumber}
+          </code>
+        </div>
+      </div>
+    </div>
+
+    {/* Patient Name */}
+    <div>
+      <label htmlFor="patientName" className="block text-sm font-semibold text-gray-700 mb-2">
+        Patient Name <span className="text-red-500">*</span>
+      </label>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
         <input
           id="patientName"
           type="text"
           value={patientName}
           onChange={(e) => setPatientName(e.target.value)}
-          className="w-full px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+          placeholder="Enter patient's full name"
           required
           key="patient-name-input"
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="patientAge" className="block text-sm font-medium text-gray-700 mb-1">
-            Age
-          </label>
+    </div>
+
+    {/* Age and Gender */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label htmlFor="patientAge" className="block text-sm font-semibold text-gray-700 mb-2">
+          Age
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
           <input
             id="patientAge"
             type="number"
             value={patientAge}
             onChange={(e) => setPatientAge(e.target.value)}
-            className="w-full px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            placeholder="Years"
             key="patient-age-input"
           />
         </div>
-        <div>
-          <label htmlFor="patientGender" className="block text-sm font-medium text-gray-700 mb-1">
-            Gender
-          </label>
+      </div>
+      
+      <div>
+        <label htmlFor="patientGender" className="block text-sm font-semibold text-gray-700 mb-2">
+          Gender
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
           <select
             id="patientGender"
             value={patientGender}
             onChange={(e) => setPatientGender(e.target.value)}
-            className="w-full px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all appearance-none bg-white cursor-pointer"
             key="patient-gender-select"
           >
             <option value="male">Male</option>
@@ -97,31 +134,45 @@ const PatientInfoForm: React.FC<PatientInfoFormProps> = ({
         </div>
       </div>
       <div>
-        <label htmlFor="referenceNumber" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="referenceNumber" className="block text-sm font-semibold text-gray-800 mb-2">
           Reference Number
         </label>
-        <input
-          id="referenceNumber"
-          type="text"
-          value={referenceNumber}
-          readOnly
-          className="w-full px-3 py-2 bg-gray-50 border text-gray-600 border-gray-300 rounded-md"
-          key="reference-number-input"
-        />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+            </svg>
+          </div>
+          <input
+            id="referenceNumber"
+            type="text"
+            value={referenceNumber}
+            readOnly
+            className="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 text-gray-700 font-medium border-indigo-200 rounded-xl focus:outline-none cursor-not-allowed"
+            key="reference-number-input"
+          />
+        </div>
       </div>
       <div>
-        <label htmlFor="patientNotes" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="patientNotes" className="block text-sm font-semibold text-gray-800 mb-2">
           Clinical Notes
         </label>
-        <textarea
-          id="patientNotes"
-          value={patientNotes}
-          onChange={(e) => setPatientNotes(e.target.value)}
-          rows={3}
-          className="w-full px-3 py-2 border text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Any symptoms or relevant medical history..."
-          key="patient-notes-textarea"
-        />
+        <div className="relative">
+          <div className="absolute top-3 left-0 pl-3 pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <textarea
+            id="patientNotes"
+            value={patientNotes}
+            onChange={(e) => setPatientNotes(e.target.value)}
+            rows={4}
+            className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
+            placeholder="Any symptoms or relevant medical history..."
+            key="patient-notes-textarea"
+          />
+        </div>
       </div>
       <div>
         <label htmlFor="medicalHistory" className="block text-sm font-medium text-gray-700 mb-1">

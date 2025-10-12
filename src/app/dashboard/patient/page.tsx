@@ -130,20 +130,13 @@ export default function PatientDashboard() {
               <h1 className="font-semibold text-gray-800 text-lg">MedRecord Hub</h1>
             </motion.div>
             <div className="flex items-center space-x-6">
-              <motion.a 
-                href="#" 
-                className="text-gray-500 hover:text-indigo-600 text-sm font-medium transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Help
-              </motion.a>
+             
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-colors">
+                <Link href="/auth/login" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-colors">
                   <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  Sign Out
+                  Back to homepage
                 </Link>
               </motion.div>
             </div>

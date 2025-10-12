@@ -164,22 +164,33 @@ export default function AdminDashboard({ user }: {
         return (
           <>
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all relative overflow-hidden group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Total Scans</p>
-                    <h3 className="text-2xl font-bold text-gray-800 mt-1">{stats.totalScans}</h3>
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-full -mr-16 -mt-16 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Total Scans</p>
+                      <motion.h3 
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
+                        className="text-3xl font-bold text-gray-900"
+                      >
+                        {stats.totalScans.toLocaleString()}
+                      </motion.h3>
+                    </div>
+                    <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -188,17 +199,28 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all relative overflow-hidden group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Pneumonia Cases</p>
-                    <h3 className="text-2xl font-bold text-gray-800 mt-1">{stats.pneumoniaCases}</h3>
-                  </div>
-                  <div className="p-3 bg-red-50 rounded-lg">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-50 to-transparent rounded-full -mr-16 -mt-16 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Pneumonia Cases</p>
+                      <motion.h3 
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3, duration: 0.4, type: "spring" }}
+                        className="text-3xl font-bold text-gray-900"
+                      >
+                        {stats.pneumoniaCases.toLocaleString()}
+                      </motion.h3>
+                    </div>
+                    <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -207,17 +229,28 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all relative overflow-hidden group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Active Doctors</p>
-                    <h3 className="text-2xl font-bold text-gray-800 mt-1">{stats.activeDoctors}</h3>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-50 to-transparent rounded-full -mr-16 -mt-16 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Active Doctors</p>
+                      <motion.h3 
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4, duration: 0.4, type: "spring" }}
+                        className="text-3xl font-bold text-gray-900"
+                      >
+                        {stats.activeDoctors.toLocaleString()}
+                      </motion.h3>
+                    </div>
+                    <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -226,19 +259,28 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all relative overflow-hidden group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Model Accuracy</p>
-                    <h3 className="text-2xl font-bold text-gray-800 mt-1">
-                      {formatModelAccuracy(stats.avgConfidence)}
-                    </h3>
-                  </div>
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-transparent rounded-full -mr-16 -mt-16 opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-2">Model Accuracy</p>
+                      <motion.h3 
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5, duration: 0.4, type: "spring" }}
+                        className="text-3xl font-bold text-gray-900"
+                      >
+                        {formatModelAccuracy(stats.avgConfidence)}
+                      </motion.h3>
+                    </div>
+                    <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -251,19 +293,29 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
               >
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Scans Over Time</h3>
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Scans Over Time</h3>
+                  <p className="text-gray-600 text-sm">Monthly scan trends and pneumonia detection rates</p>
+                </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={scanData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="month" stroke="#6B7280" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#6B7280" style={{ fontSize: '12px' }} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '0.5rem',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
                       <Legend />
-                      <Line type="monotone" dataKey="scans" stroke="#3B82F6" name="Total Scans" />
-                      <Line type="monotone" dataKey="pneumonia" stroke="#EF4444" name="Pneumonia Cases" />
+                      <Line type="monotone" dataKey="scans" stroke="#6366F1" strokeWidth={3} name="Total Scans" dot={{ fill: '#6366F1', r: 4 }} />
+                      <Line type="monotone" dataKey="pneumonia" stroke="#EF4444" strokeWidth={3} name="Pneumonia Cases" dot={{ fill: '#EF4444', r: 4 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -274,9 +326,12 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6"
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
               >
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Pneumonia Distribution</h3>
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Pneumonia Distribution</h3>
+                  <p className="text-gray-600 text-sm">Breakdown of detection results</p>
+                </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -285,7 +340,7 @@ export default function AdminDashboard({ user }: {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={80}
+                        outerRadius={100}
                         fill="#8884d8"
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -294,7 +349,14 @@ export default function AdminDashboard({ user }: {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '0.5rem',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -306,20 +368,30 @@ export default function AdminDashboard({ user }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-50 p-6 lg:col-span-2"
+                className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 lg:col-span-2 hover:shadow-xl transition-all"
               >
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Doctor Activity</h3>
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Doctor Activity</h3>
+                  <p className="text-gray-600 text-sm">Performance metrics for each doctor</p>
+                </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={doctorData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis yAxisId="left" orientation="left" stroke="#3B82F6" />
-                      <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
-                      <Tooltip />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="name" stroke="#6B7280" style={{ fontSize: '12px' }} />
+                      <YAxis yAxisId="left" orientation="left" stroke="#6366F1" style={{ fontSize: '12px' }} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#10B981" style={{ fontSize: '12px' }} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '0.5rem',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
                       <Legend />
-                      <Bar yAxisId="left" dataKey="scans" fill="#3B82F6" name="Total Scans" />
-                      <Bar yAxisId="right" dataKey="accuracy" fill="#10B981" name="Accuracy %" />
+                      <Bar yAxisId="left" dataKey="scans" fill="#6366F1" name="Total Scans" radius={[8, 8, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="accuracy" fill="#10B981" name="Accuracy %" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -332,34 +404,50 @@ export default function AdminDashboard({ user }: {
 
   return (
     <React.Fragment>
-      <main className="flex flex-col min-h-screen bg-gray-50">
-        {/* Header */}
+      <main className="flex flex-col min-h-screen bg-white">
+        {/* Premium Header */}
         <motion.header 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-white border-b border-gray-100 sticky top-0 z-50"
+          transition={{ duration: 0.5 }}
+          className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50"
         >
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex justify-between items-center">
-              <motion.div 
-                className="flex items-center"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="mr-3 flex items-center justify-center w-8 h-8">
-                  <Image src="/icons/logo.png" alt="Logo" width={20} height={20} />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center space-x-4">
+                <motion.div 
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                  className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
+                >
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </motion.div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    MedRecord Hub
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-0.5">Admin Dashboard</p>
                 </div>
-                <h1 className="font-semibold text-gray-800 text-lg">MedRecord Hub</h1>
-              </motion.div>
-              <div className="flex items-center space-x-6">
-                <span className="text-gray-600 text-sm">Welcome, {user.name}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-lg">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs text-gray-500">Administrator</p>
+                    <p className="text-sm font-semibold text-gray-800">{user.name}</p>
+                  </div>
+                </div>
                 <motion.button 
-                  onClick={() => setIsLogoutModalOpen(true)}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsLogoutModalOpen(true)}
+                  className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-medium text-sm transition-all border border-red-200"
                 >
-                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   Sign Out
@@ -369,64 +457,143 @@ export default function AdminDashboard({ user }: {
           </div>
         </motion.header>
 
-        {/* Navigation Tabs */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <nav className="flex space-x-8">
-              <button
+        {/* Premium Navigation Tabs */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="flex space-x-1">
+              <motion.button
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveSection('dashboard')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`relative px-6 py-4 font-semibold text-sm transition-all ${
                   activeSection === 'dashboard'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600 hover:text-indigo-600'
                 }`}
               >
-                Dashboard
-              </button>
-              <button
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Dashboard
+                </span>
+                {activeSection === 'dashboard' && (
+                  <motion.div 
+                    layoutId="activeAdminTab"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-full"
+                  />
+                )}
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveSection('users')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`relative px-6 py-4 font-semibold text-sm transition-all ${
                   activeSection === 'users'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600 hover:text-indigo-600'
                 }`}
               >
-                User Management
-              </button>
-              <button
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  User Management
+                </span>
+                {activeSection === 'users' && (
+                  <motion.div 
+                    layoutId="activeAdminTab"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-full"
+                  />
+                )}
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveSection('pneumonia')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`relative px-6 py-4 font-semibold text-sm transition-all ${
                   activeSection === 'pneumonia'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'text-indigo-600'
+                    : 'text-gray-600 hover:text-indigo-600'
                 }`}
               >
-                Pneumonia Data
-              </button>
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Pneumonia Data
+                </span>
+                {activeSection === 'pneumonia' && (
+                  <motion.div 
+                    layoutId="activeAdminTab"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-full"
+                  />
+                )}
+              </motion.button>
             </nav>
           </div>
         </div>
 
         {/* Main content */}
-        <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-10">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-2xl font-bold text-gray-800 mb-6"
-          >
-            {activeSection === 'dashboard' && 'Admin Dashboard'}
-            {activeSection === 'users' && 'User Management'}
-            {activeSection === 'pneumonia' && 'Pneumonia Data Management'}
-          </motion.h2>
+        <div className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+          {activeSection === 'dashboard' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+            >
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">System Overview</h2>
+                <p className="text-gray-600">Monitor platform statistics and analytics</p>
+              </div>
+            </motion.div>
+          )}
+          {activeSection === 'users' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">User Management</h2>
+              <p className="text-gray-600">Manage doctors and administrators</p>
+            </motion.div>
+          )}
+          {activeSection === 'pneumonia' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Pneumonia Data</h2>
+              <p className="text-gray-600">View and analyze pneumonia detection records</p>
+            </motion.div>
+          )}
 
           {isLoading && activeSection === 'dashboard' ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="flex flex-col justify-center items-center h-64 bg-white rounded-2xl shadow-md">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading dashboard data...</p>
             </div>
           ) : (
             renderSection()
           )}
         </div>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="md:flex md:items-center md:justify-between">
+              <div className="flex justify-center md:justify-start">
+                <div className="flex items-center">
+                  <div className="mr-2 flex items-center justify-center w-7 h-7">
+                    <Image src="/icons/logo.png" alt="Logo" width={16} height={16} />
+                  </div>
+                  <span className="text-gray-500 text-sm">© 2025 MedRecord Hub. All rights reserved.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </main>
 
       {isLogoutModalOpen && (

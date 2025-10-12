@@ -85,49 +85,57 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`bg-white rounded-xl shadow-sm border border-gray-50 p-6 hover:shadow-md transition-shadow relative overflow-hidden`}
+      whileHover={{ y: -4, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+      className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all relative overflow-hidden group"
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm text-gray-500 mb-1">{title}</p>
-          <motion.h3 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="text-2xl font-bold text-gray-800"
-          >
-            {value}
-          </motion.h3>
-          {percentage !== undefined && (
-            <div className="flex items-center mt-2">
-              <div className={`flex items-center ${increasing ? 'text-green-600' : 'text-red-600'}`}>
-                <svg 
-                  className="w-4 h-4 mr-1" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d={increasing ? "M5 10l7-7m0 0l7 7m-7-7v18" : "M19 14l-7 7m0 0l-7-7m7 7V3"} 
-                  />
-                </svg>
-                <span className="text-xs font-medium">{percentage}%</span>
-              </div>
-              <span className="text-xs text-gray-500 ml-2">vs last month</span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 bg-${color}-50 rounded-lg`}>
-          {icon}
-        </div>
-      </div>
+      {/* Background gradient decoration */}
+      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-${color}-50 to-transparent rounded-full -mr-16 -mt-16 opacity-50 group-hover:opacity-70 transition-opacity`}></div>
       
-      {/* Background decoration */}
-      <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-${color}-50 opacity-30`}></div>
+      <div className="relative">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
+            <motion.h3 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
+              className="text-3xl font-bold text-gray-900"
+            >
+              {value.toLocaleString()}
+            </motion.h3>
+          </div>
+          <div className={`p-3 bg-gradient-to-br from-${color}-500 to-${color}-600 rounded-xl shadow-lg`}>
+            {icon}
+          </div>
+        </div>
+        
+        {percentage !== undefined && (
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-2"
+          >
+            <div className={`flex items-center gap-1 ${increasing ? 'text-green-600' : 'text-red-600'} bg-${increasing ? 'green' : 'red'}-50 px-2 py-1 rounded-lg`}>
+              <svg 
+                className="w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d={increasing ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} 
+                />
+              </svg>
+              <span className="text-sm font-bold">{percentage}%</span>
+            </div>
+            <span className="text-xs text-gray-500">vs last month</span>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -268,45 +276,93 @@ function BarChart({ title, data }: { title: string; data: { name: string; value:
 // Recent Scans Table Component
 function RecentScansTable({ scans }: { scans: any[] }) {
   return (
-    <div className="overflow-x-auto w-full rounded-lg border border-gray-200">
-      <table className="min-w-[600px] w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto w-full rounded-xl border border-gray-100">
+      <table className="min-w-[600px] w-full divide-y divide-gray-100">
+        <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
-            <th scope="col" className="relative px-6 py-3">
+            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Patient
+            </th>
+            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Date
+            </th>
+            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Result
+            </th>
+            <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Confidence
+            </th>
+            <th scope="col" className="relative px-6 py-4">
               <span className="sr-only">View</span>
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-100">
           {scans.map((scan, index) => (
             <motion.tr 
               key={scan.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ backgroundColor: 'rgb(249 250 251)' }}
+              className="transition-colors"
             >
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="text-sm font-medium text-gray-900">{scan.patientName}</div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
+                      {scan.patientName.charAt(0)}
+                    </span>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900">{scan.patientName}</div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{scan.date}</div>
+                <div className="text-sm text-gray-600 font-medium">{scan.date}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${scan.result === 'Pneumonia' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm ${
+                  scan.result === 'Pneumonia' 
+                    ? 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200' 
+                    : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border border-green-200'
+                }`}>
                   {scan.result}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {scan.confidence > 100 ? (scan.confidence / 100).toFixed(2) : scan.confidence}%
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {scan.confidence > 100 ? (scan.confidence / 100).toFixed(2) : scan.confidence}%
+                  </div>
+                  <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${
+                        scan.result === 'Pneumonia' 
+                          ? 'bg-gradient-to-r from-red-500 to-red-600' 
+                          : 'bg-gradient-to-r from-green-500 to-green-600'
+                      }`}
+                      style={{ 
+                        width: `${scan.confidence > 100 ? 100 : scan.confidence}%` 
+                      }}
+                    />
+                  </div>
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <Link href={`/dashboard/doctor/scans/${scan.id}`} className="text-indigo-600 hover:text-indigo-900">View</Link>
+                <Link 
+                  href={`/dashboard/doctor/scans/${scan.id}`} 
+                  className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold group"
+                >
+                  View
+                  <svg 
+                    className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </td>
             </motion.tr>
           ))}
@@ -334,7 +390,7 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
 
   const [isLoading, setIsLoading] = useState(true);
   const [isChartsLoading, setIsChartsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'all-scans' | 'upload-xray' | 'patient-records'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'patient-records'>('dashboard');
   
   const [patientRecords, setPatientRecords] = useState<any[]>([]);
   const [isPatientsLoading, setIsPatientsLoading] = useState(false);
@@ -356,7 +412,7 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
   const [allScansError, setAllScansError] = useState<string | null>(null);
   const [allScansPage, setAllScansPage] = useState(1);
   const [allScansTotalPages, setAllScansTotalPages] = useState(1);
-  const ALL_SCANS_PER_PAGE = 10;
+  const ALL_SCANS_PER_PAGE = 8;
   const [allScansSort, setAllScansSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
   
   // Fetch dashboard data
@@ -512,77 +568,139 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
   };
 
   return (
-    <main className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="mr-3 flex items-center justify-center w-8 h-8">
-                <Image src="/icons/logo.png" alt="Logo" width={20} height={20} />
-              </div>
-              <h1 className="font-semibold text-gray-800 text-lg">MedRecord Hub</h1>
-            </div>
-            <div className="flex items-center space-x-6">
-              <span className="text-gray-600 text-sm">Welcome, {user.name}</span>
-              <button 
-                onClick={() => setIsLogoutModalOpen(true)}
-                className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center transition-colors"
+    <main className="flex flex-col min-h-screen bg-white">
+      {/* Premium Header */}
+      <motion.header 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-4">
+              <motion.div 
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+                className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
               >
-                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </motion.div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  MedRecord Hub
+                </h1>
+                <p className="text-sm text-gray-600 mt-0.5">Doctor's Dashboard</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-lg">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-left">
+                  <p className="text-xs text-gray-500">Welcome back,</p>
+                  <p className="text-sm font-semibold text-gray-800">{user.name}</p>
+                </div>
+              </div>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsLogoutModalOpen(true)}
+                className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-medium text-sm transition-all border border-red-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Sign Out
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <nav className="flex space-x-8">
-            <button
+      {/* Premium Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-1">
+            <motion.button
+              whileHover={{ y: -2 }}
               onClick={() => setActiveTab('dashboard')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`relative px-6 py-4 font-semibold text-sm transition-all ${
                 activeTab === 'dashboard'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'text-indigo-600'
+                  : 'text-gray-600 hover:text-indigo-600'
               }`}
             >
-              Dashboard
-            </button>
-            <button
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Dashboard
+              </span>
+              {activeTab === 'dashboard' && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-full"
+                />
+              )}
+            </motion.button>
+            <motion.button
+              whileHover={{ y: -2 }}
               onClick={() => setActiveTab('patient-records')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`relative px-6 py-4 font-semibold text-sm transition-all ${
                 activeTab === 'patient-records'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'text-indigo-600'
+                  : 'text-gray-600 hover:text-indigo-600'
               }`}
             >
-              Patient Records
-            </button>
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Patient Records
+              </span>
+              {activeTab === 'patient-records' && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-full"
+                />
+              )}
+            </motion.button>
           </nav>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-10">
+      <div className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (
           <>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Pneumonia Detection Dashboard</h2>
-          <Link 
-            href="/dashboard/doctor/upload-xray" 
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Upload New X-Ray
+        {/* Page Header with Action Button */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+        >
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Overview Dashboard</h2>
+            <p className="text-gray-600">Monitor your pneumonia detection analytics and patient records</p>
+          </div>
+          <Link href="/dashboard/doctor/upload-xray">
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(79, 70, 229, 0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Upload New X-Ray
+            </motion.button>
           </Link>
-        </div>
+        </motion.div>
         <AnimatePresence>
           {isLoading ? (
             <motion.div 
@@ -601,12 +719,12 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
               transition={{ duration: 0.5 }}
             >
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard 
                   title="Total X-Ray Scans" 
                   value={dashboardData.totalScans} 
                   icon={
-                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   } 
@@ -618,7 +736,7 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   title="Pneumonia Cases" 
                   value={dashboardData.pneumoniaCases} 
                   icon={
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   } 
@@ -630,7 +748,7 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   title="Normal Cases" 
                   value={dashboardData.normalCases} 
                   icon={
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   } 
@@ -642,7 +760,7 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                   title="Today's Scans" 
                   value={dashboardData.todayScans} 
                   icon={
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   } 
@@ -650,33 +768,66 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                 />
               </div>
                    {/* Demographic Charts Section */}
-                   <div className="mb-8">
+                   <motion.div 
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.3 }}
+                     className="mb-8"
+                   >
+                     <div className="mb-6">
+                       <h3 className="text-xl font-bold text-gray-900 mb-2">Patient Demographics</h3>
+                       <p className="text-gray-600 text-sm">Analysis of patient distribution across different categories</p>
+                     </div>
                     {isChartsLoading ? (
-                      <div className="flex justify-center items-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div></div>
+                      <div className="flex justify-center items-center h-48 bg-white rounded-2xl shadow-md">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                          <p className="text-gray-500 text-sm">Loading analytics...</p>
+                        </div>
+                      </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.1 }}
+                          className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
+                        >
                           <BarChart title="Cases by Gender" data={chartsData?.genderDistribution || []} />
                         </motion.div>
-                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.2 }}
+                          className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
+                        >
                           <BarChart title="Cases by Age Group" data={chartsData?.ageDistribution || []} />
                         </motion.div>
-                        <motion.div className="bg-white rounded-xl shadow-sm border border-gray-50 p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.3 }}
+                          className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
+                        >
                           <BarChart title="Top 10 Locations (Region)" data={chartsData?.locationDistribution || []} />
                         </motion.div>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
               {/* Charts and Tables Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Donut Chart */}
                 <motion.div 
-                  className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-50 p-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="lg:col-span-1 bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: 0.4 }}
+                  whileHover={{ y: -4 }}
                 >
-                  <h3 className="text-lg font-medium text-gray-800 mb-6">Case Distribution</h3>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Case Distribution</h3>
+                    <p className="text-gray-600 text-sm">Overview of diagnostic results</p>
+                  </div>
                   <DonutChart 
                     normalCount={dashboardData.normalCases} 
                     pneumoniaCount={dashboardData.pneumoniaCases} 
@@ -684,13 +835,24 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                 </motion.div>
                 {/* Recent Scans */}
                 <motion.div 
-                  className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-50 p-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
+                  className="lg:col-span-2 bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-xl transition-all"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
                 >
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-medium text-gray-800">Recent X-Ray Scans</h3>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Recent X-Ray Scans</h3>
+                      <p className="text-gray-600 text-sm">Latest diagnostic results</p>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('patient-records')}
+                      className="px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                    >
+                      View All
+                    </motion.button>
                   </div>
                   <RecentScansTable scans={dashboardData.recentScans} />
                 </motion.div>
@@ -701,91 +863,218 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
         </AnimatePresence>
           </>
         )}
-        {activeTab === 'all-scans' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">All X-Ray Scans</h2>
-            <p className="text-gray-600">[All Scans Table Placeholder]</p>
-          </div>
-        )}
-        {activeTab === 'upload-xray' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Upload X-Ray</h2>
-            <p className="text-gray-600">[Upload X-Ray Form Placeholder]</p>
-          </div>
-        )}
         {activeTab === 'patient-records' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Patient Records</h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="bg-white rounded-2xl shadow-md border border-gray-100 p-8"
+          >
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Records</h2>
+              <p className="text-gray-600">Comprehensive view of all patient X-ray scans and diagnostics</p>
+            </div>
             {/* All Scans Table */}
             <div className="mb-10">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">All X-Ray Scans</h3>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">All X-Ray Scans</h3>
+                  <p className="text-sm text-gray-600">Click column headers to sort</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 font-medium">
+                    {allScans.length} {allScans.length === 1 ? 'record' : 'records'} found
+                  </span>
+                </div>
+              </div>
               {isAllScansLoading ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="flex flex-col justify-center items-center h-64 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl">
+                  <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+                  <p className="text-gray-600 font-medium">Loading patient records...</p>
                 </div>
               ) : allScansError ? (
-                <div className="text-red-500 text-center py-8">{allScansError}</div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center"
+                >
+                  <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-red-700 font-semibold text-lg">{allScansError}</p>
+                </motion.div>
               ) : allScans.length === 0 ? (
-                <div className="text-gray-500 text-center py-8">No scans found.</div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-12 text-center"
+                >
+                  <svg className="w-20 h-20 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-700 font-semibold text-xl mb-2">No scans found</p>
+                  <p className="text-gray-600">Start by uploading your first X-ray scan</p>
+                </motion.div>
               ) : (
-                <div className="overflow-x-auto w-full rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto w-full rounded-2xl border border-gray-100 shadow-sm">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'patientName', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
-                          Patient
+                        <th 
+                          className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group" 
+                          onClick={() => setAllScansSort({ key: 'patientName', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}
+                        >
+                          <div className="flex items-center gap-2">
+                            Patient
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                          </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'date', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
-                          Date
+                        <th 
+                          className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group" 
+                          onClick={() => setAllScansSort({ key: 'date', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}
+                        >
+                          <div className="flex items-center gap-2">
+                            Date
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                          </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'result', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
-                          Result
+                        <th 
+                          className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group" 
+                          onClick={() => setAllScansSort({ key: 'result', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}
+                        >
+                          <div className="flex items-center gap-2">
+                            Result
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                          </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => setAllScansSort({ key: 'confidence', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}>
-                          Confidence
+                        <th 
+                          className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group" 
+                          onClick={() => setAllScansSort({ key: 'confidence', direction: allScansSort.direction === 'asc' ? 'desc' : 'asc' })}
+                        >
+                          <div className="flex items-center gap-2">
+                            Confidence
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                          </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference #</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Reference #
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {allScans.map((scan) => (
-                        <tr key={scan.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{scan.patientName}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{scan.date ? new Date(scan.date).toLocaleDateString() : ''}</td>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {allScans.map((scan, index) => (
+                        <motion.tr 
+                          key={scan.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.03 }}
+                          whileHover={{ backgroundColor: 'rgb(249 250 251)' }}
+                          className="transition-colors"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${scan.result === 'Pneumonia' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{scan.result}</span>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                                <span className="text-white font-semibold text-sm">
+                                  {scan.patientName.charAt(0)}
+                                </span>
+                              </div>
+                              <span className="text-sm font-semibold text-gray-900">{scan.patientName}</span>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{(scan.confidence > 1 ? (scan.confidence / 100).toFixed(2) : scan.confidence.toFixed(2))}%</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{scan.referenceNumber}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-700 font-medium">
+                              {scan.date ? new Date(scan.date).toLocaleDateString() : 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm ${
+                              scan.result === 'Pneumonia' 
+                                ? 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200' 
+                                : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border border-green-200'
+                            }`}>
+                              {scan.result}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {(scan.confidence > 1 ? (scan.confidence / 100).toFixed(2) : scan.confidence.toFixed(2))}%
+                              </span>
+                              <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full ${
+                                    scan.result === 'Pneumonia' 
+                                      ? 'bg-gradient-to-r from-red-500 to-red-600' 
+                                      : 'bg-gradient-to-r from-green-500 to-green-600'
+                                  }`}
+                                  style={{ 
+                                    width: `${scan.confidence > 1 ? 100 : scan.confidence * 100}%` 
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-700 font-mono bg-gray-50 px-2 py-1 rounded">
+                              {scan.referenceNumber}
+                            </span>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link href={`/dashboard/doctor/scans/${scan.id}`} className="text-indigo-600 hover:text-indigo-900">View</Link>
+                            <Link 
+                              href={`/dashboard/doctor/scans/${scan.id}`} 
+                              className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold group"
+                            >
+                              View
+                              <svg 
+                                className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
                     </tbody>
                   </table>
-                  {/* Pagination Controls: Page Numbers Only */}
-                  <div className="flex justify-center items-center mt-4 gap-2">
-                    {Array.from({ length: allScansTotalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => setAllScansPage(page)}
-                        className={`px-3 py-1.5 rounded-md border text-sm font-medium transition-colors ${
-                          allScansPage === page
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-indigo-50'
-                        }`}
-                        disabled={allScansPage === page}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                  {/* Pagination Controls */}
+                  <div className="flex justify-center items-center px-6 py-5 bg-gray-50 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      {Array.from({ length: allScansTotalPages }, (_, i) => i + 1).map((page) => (
+                        <motion.button
+                          key={page}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setAllScansPage(page)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all shadow-sm ${
+                            allScansPage === page
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
+                          }`}
+                          disabled={allScansPage === page}
+                        >
+                          {page}
+                        </motion.button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
       
