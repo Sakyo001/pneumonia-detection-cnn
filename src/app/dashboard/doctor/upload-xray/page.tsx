@@ -7,10 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import PatientInfoForm from './PatientInfoForm';
+import EnhancedPatientInfoForm from './EnhancedPatientInfoForm';
 import XrayUploadSection from './XrayUploadSection';
 import AnalysisResultDisplay from './AnalysisResultDisplay';
 import PrintOnlyReport from './PrintOnlyReport';
 import Footer from './Footer';
+import type { SymptomData } from './symptom-scoring';
 
 // Define the analysis result type to fix TypeScript errors
 interface AnalysisResult {
@@ -136,6 +138,74 @@ export default function UploadXrayPage() {
   const [patientLocation, setPatientLocation] = useState("");
   const [reportedSymptoms, setReportedSymptoms] = useState<string[]>([]);
   const [customSymptom, setCustomSymptom] = useState("");
+  
+  // Enhanced symptom data for accuracy improvement
+  const [symptomData, setSymptomData] = useState<SymptomData>({
+    // Primary symptoms
+    fever: false,
+    persistentCough: false,
+    chestPain: false,
+    difficultyBreathing: false,
+    
+    // Secondary symptoms
+    fatigue: false,
+    rapidBreathing: false,
+    cracklingSounds: false,
+    
+    // Cough characteristics
+    productiveCough: false,
+    dryHackingCough: false,
+    
+    // Sputum characteristics
+    clearSputum: false,
+    yellowGreenSputum: false,
+    bloodInSputum: false,
+    
+    // Onset
+    suddenOnset: false,
+    gradualOnset: false,
+    
+    // Associated symptoms
+    muscleAches: false,
+    chillsAndShaking: false,
+    headache: false,
+    soreThroat: false,
+    nauseaVomiting: false,
+    confusion: false,
+    
+    // Risk factors
+    recentColdFlu: false,
+    weakenedImmuneSystem: false,
+    smoker: false,
+    age65Plus: false,
+    ageUnder5: false,
+    chronicLungDisease: false,
+    heartDisease: false,
+    diabetes: false,
+    
+    // COVID-19 specific
+    lossOfTasteSmell: false,
+    knownCovidExposure: false,
+    suddenSevereBreathing: false,
+    
+    // TB specific
+    nightSweats: false,
+    weightLoss: false,
+    chronicCough: false,
+    chronicCoughWeeks: undefined,
+    hemoptysis: false,
+    travelToTBEndemicArea: false,
+    hivPositiveOrImmunocompromised: false,
+    closeContactWithTBPatient: false,
+    
+    // Vital signs (optional)
+    vitalSigns: {
+      temperature: undefined,
+      oxygenSaturation: undefined,
+      heartRate: undefined,
+      respiratoryRate: undefined,
+    }
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -265,16 +335,37 @@ export default function UploadXrayPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload a valid image file.');
+    
+    const isImage = file.type.startsWith('image/');
+    const isPDF = file.type === 'application/pdf';
+    
+    if (!isImage && !isPDF) {
+      setError('Please upload a valid image file (PNG, JPG, JPEG) or PDF.');
       setSelectedFile(null);
       setPreviewUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
+    
+    // Check file size (10MB for images, 50MB for PDFs)
+    const maxSize = isPDF ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError(`File size exceeds ${isPDF ? '50MB' : '10MB'} limit.`);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    
     setError(null);
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    
+    if (isPDF) {
+      // For PDFs, use a data URI with PDF mime type
+      setPreviewUrl('data:application/pdf;base64,pdf');
+    } else {
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -288,12 +379,36 @@ export default function UploadXrayPage() {
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
+      
+      const isImage = file.type.startsWith('image/');
+      const isPDF = file.type === 'application/pdf';
+      
+      if (!isImage && !isPDF) {
+        setError('Please upload a valid image file (PNG, JPG, JPEG) or PDF.');
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
+      }
+      
+      // Check file size (10MB for images, 50MB for PDFs)
+      const maxSize = isPDF ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError(`File size exceeds ${isPDF ? '50MB' : '10MB'} limit.`);
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
+      }
+      
       setSelectedFile(file);
       setError(null);
       setAnalysisResult(null);
       
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      if (isPDF) {
+        setPreviewUrl('data:application/pdf;base64,pdf');
+      } else {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      }
     }
   };
 
@@ -342,12 +457,17 @@ export default function UploadXrayPage() {
         console.log("=== FRONTEND ANALYSIS RESULT DEBUG ===");
         console.log("Full result object:", result);
         console.log("Prediction value:", result.prediction);
+        console.log("Prediction is truthy?", !!result.prediction);
+        console.log("Prediction type:", typeof result.prediction);
         console.log("Confidence value:", result.confidence);
+        console.log("Diagnosis value:", result.diagnosis);
         console.log("Is validation only:", result.isValidationOnly);
         console.log("DB saved:", result.dbSaved);
+        console.log("Result keys:", Object.keys(result));
         console.log("=====================================");
         
         setAnalysisResult(result);
+        console.log("[DEBUG] State updated with result, currentStep set to 0");
         setCurrentStep(0); // Start with the first step
         
         // Log the successful analysis
@@ -551,37 +671,34 @@ export default function UploadXrayPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Patient Information</h3>
               </div>
-              <PatientInfoForm
+              <EnhancedPatientInfoForm
                 patientName={patientName}
                 setPatientName={setPatientName}
                 patientAge={patientAge}
                 setPatientAge={setPatientAge}
                 patientGender={patientGender}
-              setPatientGender={setPatientGender}
-              referenceNumber={referenceNumber}
-              patientNotes={patientNotes}
-              setPatientNotes={setPatientNotes}
-              medicalHistory={medicalHistory}
-              setMedicalHistory={setMedicalHistory}
-              reportedSymptoms={reportedSymptoms}
-              setReportedSymptoms={setReportedSymptoms}
-              customSymptom={customSymptom}
-              setCustomSymptom={setCustomSymptom}
-              commonSymptoms={commonSymptoms}
-              regions={regions}
-              selectedRegion={selectedRegion}
-              setSelectedRegion={setSelectedRegion}
-              selectedRegionCode={selectedRegionCode}
-              setSelectedRegionCode={setSelectedRegionCode}
-              cities={cities}
-              selectedCity={selectedCity}
-              setSelectedCity={setSelectedCity}
-              selectedCityCode={selectedCityCode}
-              setSelectedCityCode={setSelectedCityCode}
-              barangays={barangays}
-              selectedBarangay={selectedBarangay}
-              setSelectedBarangay={setSelectedBarangay}
-            />
+                setPatientGender={setPatientGender}
+                referenceNumber={referenceNumber}
+                patientNotes={patientNotes}
+                setPatientNotes={setPatientNotes}
+                medicalHistory={medicalHistory}
+                setMedicalHistory={setMedicalHistory}
+                symptomData={symptomData}
+                setSymptomData={setSymptomData}
+                regions={regions}
+                selectedRegion={selectedRegion}
+                setSelectedRegion={setSelectedRegion}
+                selectedRegionCode={selectedRegionCode}
+                setSelectedRegionCode={setSelectedRegionCode}
+                cities={cities}
+                selectedCity={selectedCity}
+                setSelectedCity={setSelectedCity}
+                selectedCityCode={selectedCityCode}
+                setSelectedCityCode={setSelectedCityCode}
+                barangays={barangays}
+                selectedBarangay={selectedBarangay}
+                setSelectedBarangay={setSelectedBarangay}
+              />
             </div>
             
             {/* Right: Upload or Result */}
@@ -618,6 +735,7 @@ export default function UploadXrayPage() {
                   patientAge={patientAge}
                   patientGender={patientGender}
                   patientNotes={patientNotes}
+                  medicalHistory={medicalHistory}
                   reportedSymptoms={reportedSymptoms}
                   resetForm={resetForm}
                 />

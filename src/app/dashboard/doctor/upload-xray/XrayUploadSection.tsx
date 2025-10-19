@@ -17,6 +17,18 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
 }) => {
   const [isDragging, setIsDragging] = React.useState(false);
 
+  const getFileTypeIcon = () => {
+    if (!selectedFile) return null;
+    if (selectedFile.type.startsWith('image/')) {
+      return '🖼️';
+    } else if (selectedFile.type === 'application/pdf') {
+      return '📄';
+    }
+    return '📎';
+  };
+
+  const isFileTypePDF = selectedFile?.type === 'application/pdf';
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -70,21 +82,34 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
               className="space-y-4"
             >
               <div className="relative h-64 w-full max-w-md mx-auto rounded-xl overflow-hidden shadow-lg">
-                <img 
-                  src={previewUrl} 
-                  alt="X-ray preview" 
-                  className="w-full h-full object-contain bg-gray-900"
-                />
+                {isFileTypePDF || previewUrl?.startsWith('data:application/pdf') ? (
+                  <div className="w-full h-full bg-gradient-to-br from-red-100 to-red-50 flex flex-col items-center justify-center">
+                    <div className="text-6xl mb-3">📄</div>
+                    <div className="text-center">
+                      <p className="text-red-800 font-semibold text-lg">PDF Report</p>
+                      <p className="text-red-600 text-sm">Ready for Analysis</p>
+                    </div>
+                  </div>
+                ) : (
+                  <img 
+                    src={previewUrl || ''} 
+                    alt="X-ray preview" 
+                    className="w-full h-full object-contain bg-gray-900"
+                  />
+                )}
                 <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                   </svg>
-                  Uploaded
+                  {isFileTypePDF ? 'PDF' : 'Image'} Uploaded
                 </div>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-900 truncate">{selectedFile?.name}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">{getFileTypeIcon()}</span>
+                  <p className="text-sm font-medium text-gray-900 truncate">{selectedFile?.name}</p>
+                </div>
+                <p className="text-xs text-gray-500 ml-7">
                   {selectedFile && (selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -125,7 +150,7 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
               </motion.div>
               <div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                  {isDragging ? 'Drop your X-ray here' : 'Upload X-Ray Image'}
+                  {isDragging ? 'Drop your X-ray here' : 'Upload X-Ray Image or PDF Report'}
                 </h4>
                 <div className="flex flex-col items-center gap-2">
                   <label 
@@ -144,7 +169,7 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
                       name="xray-upload" 
                       type="file" 
                       className="sr-only" 
-                      accept="image/*"
+                      accept="image/*,.pdf"
                       onChange={handleFileChange}
                       ref={fileInputRef}
                       key="xray-file-input"
@@ -154,7 +179,7 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
                   <p className="text-sm text-gray-600">or drag and drop</p>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-8 pt-4">
+              <div className="flex flex-col items-center justify-center gap-4 pt-4">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"/>
@@ -163,9 +188,15 @@ const XrayUploadSection: React.FC<XrayUploadSectionProps> = ({
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 3a2 2 0 012-2h8a2 2 0 012 2v4h2a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h2V3z" />
+                  </svg>
+                  PDF (DiCOM or Reports)
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
                   </svg>
-                  Max 10MB
+                  Max 50MB
                 </div>
               </div>
             </motion.div>

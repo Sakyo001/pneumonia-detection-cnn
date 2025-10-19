@@ -1,5 +1,7 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import ClinicalRecommendations from './ClinicalRecommendations';
+import { generateClinicalRecommendations } from './symptom-scoring';
 
 interface AnalysisResultDisplayProps {
   analysisResult: any;
@@ -11,12 +13,13 @@ interface AnalysisResultDisplayProps {
   patientAge: string;
   patientGender: string;
   patientNotes: string;
+  medicalHistory?: string;
   reportedSymptoms: string[];
   resetForm: () => void;
 }
 
 const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
-  analysisResult, currentStep, setCurrentStep, totalSteps, previewUrl, patientName, patientAge, patientGender, patientNotes, reportedSymptoms, resetForm
+  analysisResult, currentStep, setCurrentStep, totalSteps, previewUrl, patientName, patientAge, patientGender, patientNotes, medicalHistory, reportedSymptoms, resetForm
 }) => {
   console.log("AnalysisResultDisplay received:", analysisResult);
   console.log("Prediction:", analysisResult?.prediction);
@@ -27,15 +30,18 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
   const pneumoniaResults = ["BACTERIAL_PNEUMONIA", "VIRAL_PNEUMONIA"];
   const isPneumonia = pneumoniaResults.includes(analysisResult?.prediction || "");
   const isNormal = analysisResult?.prediction === "NORMAL";
+  const isSafetyRejected = analysisResult?.safetyRejected === true;
   
   console.log("isValidationOnly:", isValidationOnly);
   console.log("isPneumonia:", isPneumonia);
   console.log("isNormal:", isNormal);
+  console.log("isSafetyRejected:", isSafetyRejected);
 
   // Convert JSON keys to user-friendly strings
   const getUserFriendlyPrediction = (prediction: string) => {
     switch (prediction) {
       case "NON_XRAY": return "Not a Chest X-Ray";
+      case "NON_XRAY_SAFETY": return "Unverified - Requires Symptoms";
       case "COVID": return "COVID-19";
       case "TB": return "Tuberculosis";
       case "BACTERIAL_PNEUMONIA": return "Bacterial Pneumonia";
@@ -46,6 +52,7 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
   };
 
   const getResultColor = () => {
+    if (isSafetyRejected) return "text-orange-600"; // Orange for safety warnings
     if (isValidationOnly) return "text-red-600";
     if (isPneumonia) return "text-red-600";
     if (isNormal) return "text-green-600";
@@ -55,6 +62,7 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
   const getResultDescription = () => {
     const prediction = analysisResult?.prediction || "";
     if (prediction === "NON_XRAY") return "This image does not appear to be a chest X-ray.";
+    if (prediction === "NON_XRAY_SAFETY") return "This upload requires verification. Please provide symptom information and ensure you're uploading a medical X-ray image.";
     if (prediction === "COVID") return "COVID-19 related findings detected.";
     if (prediction === "TB") return "Tuberculosis characteristics detected.";
     if (prediction === "BACTERIAL_PNEUMONIA") return "Bacterial pneumonia detected.";
@@ -90,6 +98,15 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
               <h3 className="text-lg font-semibold text-red-800">Validation Result</h3>
             </div>
             <p className="text-red-700 text-sm mb-4">{getResultDescription()}</p>
+            
+            {/* Show detailed message for text-only PDFs */}
+            {analysisResult?.message && (
+              <div className="bg-red-100 border border-red-300 rounded-md p-3 mb-4">
+                <p className="text-sm text-red-800 font-medium mb-2">Details:</p>
+                <p className="text-xs text-red-700">{analysisResult.message}</p>
+              </div>
+            )}
+            
             <div className="bg-red-100 border border-red-200 rounded-md p-3 mb-4">
               <p className="text-xs text-red-700">
                 <strong>Note:</strong> This is a validation result and has not been saved to the database. 
@@ -323,66 +340,15 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h4 className="text-lg font-medium text-gray-800 mb-4">Clinical Recommendations</h4>
-                    
-                    <div className="border-l-4 border-indigo-500 pl-3 mb-5">
-                      <p className="text-gray-800 font-medium">Primary Recommendation</p>
-                      <p className="text-sm text-gray-700 mt-1">
-                        {analysisResult?.prediction === 'BACTERIAL_PNEUMONIA'
-                          ? 'Immediate antibiotic treatment is recommended. Start empiric therapy with amoxicillin-clavulanate or doxycycline for outpatient treatment. Consider hospital admission for severe cases or high-risk patients. Monitor response within 48-72 hours.'
-                          : 'Supportive care including rest, hydration, and fever management. Consider antiviral therapy (oseltamivir) if influenza is suspected and presenting within 48 hours. Monitor for secondary bacterial infection. Hospital admission may be needed for severe cases.'}
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-4 mt-6">
-                      <div>
-                        <h5 className="font-medium text-sm mb-2 text-indigo-700">Additional Diagnostic Tests</h5>
-                        <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                          <li>Complete blood count with differential (WBC count, neutrophil percentage)</li>
-                          <li>Blood cultures (before antibiotic administration if bacterial suspected)</li>
-                          <li>Sputum Gram stain and culture (if productive cough)</li>
-                          <li>Pulse oximetry or arterial blood gas analysis</li>
-                          <li>CRP and procalcitonin levels (to guide antibiotic therapy)</li>
-                          <li>Consider CT scan of the chest for complex cases</li>
-                          <li>Influenza and COVID-19 testing if viral etiology suspected</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h5 className="font-medium text-sm mb-2 text-indigo-700">Treatment Options</h5>
-                        <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                          {analysisResult?.prediction === 'BACTERIAL_PNEUMONIA' ? (
-                            <>
-                              <li><strong>Outpatient:</strong> Amoxicillin-clavulanate 875/125mg BID or doxycycline 100mg BID</li>
-                              <li><strong>Alternative:</strong> Azithromycin 500mg daily for 3 days or clarithromycin 500mg BID</li>
-                              <li><strong>Severe cases:</strong> Consider IV antibiotics and hospital admission</li>
-                              <li><strong>Duration:</strong> 5-7 days for uncomplicated cases, 7-10 days for severe cases</li>
-                            </>
-                          ) : (
-                            <>
-                              <li><strong>Supportive care:</strong> Rest, hydration, antipyretics (acetaminophen/ibuprofen)</li>
-                              <li><strong>Antiviral therapy:</strong> Oseltamivir 75mg BID for 5 days if influenza suspected</li>
-                              <li><strong>Monitoring:</strong> Watch for secondary bacterial infection requiring antibiotics</li>
-                              <li><strong>Severe cases:</strong> May require hospital admission for oxygen therapy</li>
-                            </>
-                          )}
-                          <li><strong>Oxygen therapy:</strong> If SpO2 &lt; 92% or respiratory distress</li>
-                          <li><strong>Follow-up:</strong> Clinical assessment within 48-72 hours</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h5 className="font-medium text-sm mb-2 text-indigo-700">Follow-up Recommendations</h5>
-                        <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                          <li>Follow-up chest X-ray in 4-6 weeks to confirm resolution</li>
-                          <li>Clinical assessment within 48-72 hours for high-risk patients</li>
-                          <li>Patient education on preventing recurrence and recognizing worsening symptoms</li>
-                          <li>Consider pneumococcal and influenza vaccination (if not previously vaccinated)</li>
-                          <li>Smoking cessation counseling if applicable</li>
-                          <li>Address underlying comorbidities that may have contributed</li>
-                        </ul>
-                      </div>
-                    </div>
+                    <ClinicalRecommendations 
+                      recommendation={generateClinicalRecommendations(
+                        analysisResult?.prediction || '',
+                        analysisResult?.confidence || 0,
+                        null,
+                        patientAge,
+                        medicalHistory
+                      )}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
