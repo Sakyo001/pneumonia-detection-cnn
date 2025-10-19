@@ -3,6 +3,7 @@ import { analyzeXrayImage } from '@/lib/analysis';
 import { prisma } from '@/lib/db';
 import { uploadImage } from '@/lib/cloudinary';
 import { getUserFromCookie } from '@/lib/auth';
+import { analyzePDFContent } from '@/lib/pdf-analysis';
 import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to test database connection with retries
@@ -119,6 +120,48 @@ export async function POST(request: NextRequest) {
       cloudinaryUrl = '';
     }
     
+    // ===== NEW: Check if PDF is text-only before analysis =====
+    const isPDF = file.type === 'application/pdf';
+    let isTextOnlyPDF = false;
+    let pdfAnalysisReason = "";
+    
+    if (isPDF) {
+      console.log("[PDF_CHECK] Analyzing PDF content before model processing...");
+      const pdfAnalysis = await analyzePDFContent(buffer);
+      isTextOnlyPDF = pdfAnalysis.isTextOnly;
+      pdfAnalysisReason = pdfAnalysis.reason;
+      
+      console.log("[PDF_CHECK] PDF Analysis Result:", {
+        isTextOnly: pdfAnalysis.isTextOnly,
+        hasImages: pdfAnalysis.hasImages,
+        confidence: pdfAnalysis.estimatedConfidence,
+        reason: pdfAnalysis.reason
+      });
+      
+      // If text-only PDF detected, skip model analysis and return NON_XRAY validation result
+      if (isTextOnlyPDF) {
+        console.log("[PDF_CHECK] Text-only PDF detected - returning NON_XRAY validation result");
+        return NextResponse.json({
+          prediction: "NON_XRAY",
+          confidence: pdfAnalysis.estimatedConfidence * 100,
+          pneumoniaType: null,
+          severity: null,
+          severityDescription: null,
+          recommendedAction: "Please upload a medical X-ray image (PNG, JPG, or scanned X-ray PDF)",
+          imageUrl: "", // Don't save text PDFs
+          referenceNumber: referenceNumber,
+          timestamp: new Date().toISOString(),
+          patientNotes,
+          medicalHistory,
+          dbSaved: false,
+          isValidationOnly: true,
+          validationReason: pdfAnalysisReason,
+          message: "Text-only PDF detected. This file does not contain medical imaging content. Please upload a chest X-ray image instead."
+        });
+      }
+    }
+    // ===== END PDF CHECK =====
+    
     // Analyze the X-ray using the EfficientNet model
     const analysisResult = await analyzeXrayImage(file, {
       name: patientName,
@@ -136,6 +179,31 @@ export async function POST(request: NextRequest) {
     console.log("Analysis result diagnosis:", analysisResult.diagnosis);
     console.log("Full analysis result:", JSON.stringify(analysisResult, null, 2));
 
+    // Map diagnosis to prediction if prediction is missing
+    console.log("[DEBUG] Before mapping - Has prediction?", !!analysisResult.prediction, "Diagnosis:", analysisResult.diagnosis);
+    if (!analysisResult.prediction && analysisResult.diagnosis) {
+      // Map diagnosis to standard prediction format
+      if (analysisResult.diagnosis === 'Normal' || analysisResult.diagnosis === 'NORMAL') {
+        analysisResult.prediction = 'NORMAL';
+      } else if (analysisResult.diagnosis === 'Pneumonia' || analysisResult.diagnosis === 'PNEUMONIA') {
+        // Map based on pneumoniaType if available
+        if (analysisResult.pneumoniaType === 'Bacterial') {
+          analysisResult.prediction = 'BACTERIAL_PNEUMONIA';
+        } else if (analysisResult.pneumoniaType === 'Viral') {
+          analysisResult.prediction = 'VIRAL_PNEUMONIA';
+        } else {
+          analysisResult.prediction = 'BACTERIAL_PNEUMONIA'; // Default to bacterial
+        }
+      } else {
+        analysisResult.prediction = 'NORMAL'; // Default fallback
+      }
+      console.log("[DEBUG] Mapped diagnosis to prediction:", analysisResult.prediction);
+    } else if (analysisResult.prediction) {
+      console.log("[DEBUG] Prediction already exists:", analysisResult.prediction);
+    } else {
+      console.log("[DEBUG] No diagnosis to map from");
+    }
+
     // Check if this is a validation-only result (NON_XRAY, COVID, TB)
     const validationOnlyResults = ["NON_XRAY", "COVID", "TB"];
     const isValidationOnly = validationOnlyResults.includes(analysisResult.prediction || "");
@@ -144,24 +212,57 @@ export async function POST(request: NextRequest) {
     console.log("Analysis result prediction:", analysisResult.prediction);
     console.log("Validation only results:", validationOnlyResults);
     console.log("Is validation only:", isValidationOnly);
+    console.log("Reported symptoms count:", symptomsArray.length);
     console.log("=================================");
     
-    if (isValidationOnly) {
+    // ===== ADDITIONAL SAFETY CHECK: No symptoms + PDF file + uncertain diagnosis =====
+    // If user didn't report any symptoms AND uploaded a PDF AND got an unusual result,
+    // it's likely not a medical X-ray. Mark as validation-only for safety.
+    const hasNoSymptoms = symptomsArray.length === 0;
+    const hasUncertainDiagnosis = analysisResult.prediction === 'NORMAL' || 
+                                   analysisResult.prediction === 'VIRAL_PNEUMONIA' ||
+                                   analysisResult.prediction === 'BACTERIAL_PNEUMONIA';
+    
+    let shouldRejectForSafety = false;
+    let rejectReason = "";
+    
+    if (isPDF && hasNoSymptoms && hasUncertainDiagnosis) {
+      // This combination is suspicious - PDF + no symptoms + medical finding
+      // Likely a text document that the model misidentified
+      console.log("[SAFETY_CHECK] Suspicious combination detected:");
+      console.log("  - PDF file: YES");
+      console.log("  - No symptoms reported: YES");
+      console.log("  - Model returned:", analysisResult.prediction);
+      console.log("  → Recommendation: Treat as validation-only");
+      
+      shouldRejectForSafety = true;
+      rejectReason = "PDF uploaded without symptom information. As a safety measure, this requires clinical verification before saving to database.";
+      console.log("[SAFETY_CHECK] Marking as validation-only for safety");
+    }
+    
+    if (isValidationOnly || shouldRejectForSafety) {
       console.log("Validation-only result detected, not saving to database:", analysisResult.prediction);
       return NextResponse.json({
-        prediction: analysisResult.prediction,
+        prediction: shouldRejectForSafety ? "NON_XRAY_SAFETY" : analysisResult.prediction,
         confidence: analysisResult.confidence,
         pneumoniaType: null,
         severity: null,
         severityDescription: null,
-        recommendedAction: "Further evaluation required",
+        recommendedAction: shouldRejectForSafety ? 
+          "Please provide symptom information and ensure you're uploading a medical X-ray image." :
+          "Further evaluation required",
         imageUrl: "", // Don't save validation images
         referenceNumber: referenceNumber,
         timestamp: new Date().toISOString(),
         patientNotes,
         medicalHistory,
         dbSaved: false, // Explicitly mark as not saved
-        isValidationOnly: true
+        isValidationOnly: true,
+        safetyRejected: shouldRejectForSafety,
+        safetyReason: rejectReason,
+        message: shouldRejectForSafety ? 
+          `⚠️ Safety Check: PDF file uploaded without symptom information. Unable to verify this is a medical X-ray. ${rejectReason}` :
+          undefined
       });
     }
 
@@ -296,6 +397,15 @@ export async function POST(request: NextRequest) {
         });
         
         console.log("Successfully saved scan to database with ID:", xrayScan.id);
+        
+        // Debug: Verify prediction exists before returning
+        console.log("[DEBUG] About to return success - Prediction value:", analysisResult.prediction);
+        console.log("[DEBUG] Return object keys:", {
+          hasPrediction: !!analysisResult.prediction,
+          prediction: analysisResult.prediction,
+          confidence: analysisResult.confidence,
+          diagnosis: analysisResult.diagnosis
+        });
 
         return NextResponse.json({
           prediction: analysisResult.prediction,

@@ -10,6 +10,8 @@ import { prisma } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { uploadImage } from '@/lib/cloudinary';
 import { getUserFromCookie } from '@/lib/auth';
+import type { SymptomData } from './symptom-scoring';
+import { calculateSymptomScore, adjustConfidenceWithSymptoms, generateClinicalSummary } from './symptom-scoring';
 
 // Helper function to test database connection with retries
 async function testDatabaseConnection(maxRetries = 3, delayMs = 1000): Promise<boolean> {
@@ -85,6 +87,22 @@ export async function uploadXray(formData: FormData) {
       return { error: "No X-ray image provided" };
     }
     
+    // Validate file type
+    const isImage = file.type.startsWith('image/');
+    const isPDF = file.type === 'application/pdf';
+    
+    if (!isImage && !isPDF) {
+      return { error: "Invalid file type. Please upload an image (PNG, JPG, JPEG) or PDF." };
+    }
+    
+    // Validate file size (10MB for images, 50MB for PDFs)
+    const maxSize = isPDF ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return { error: `File size exceeds ${isPDF ? '50MB' : '10MB'} limit.` };
+    }
+    
+    console.log(`Processing ${isPDF ? 'PDF' : 'image'} file: ${file.name}`);
+    
     // Extract patient information
     const patientName = formData.get('patientName') as string;
     const patientAge = formData.get('patientAge') as string;
@@ -96,6 +114,17 @@ export async function uploadXray(formData: FormData) {
     const city = formData.get('city') as string;
     const barangay = formData.get('barangay') as string;
     const reportedSymptoms = formData.get('reportedSymptoms') as string;
+    
+    // Parse enhanced symptom data
+    const symptomDataString = formData.get('symptomData') as string;
+    let symptomData: SymptomData | null = null;
+    try {
+      if (symptomDataString) {
+        symptomData = JSON.parse(symptomDataString);
+      }
+    } catch (error) {
+      console.error("Error parsing symptom data:", error);
+    }
     
     // Parse reported symptoms from JSON string
     let symptomsArray: string[] = [];
@@ -114,7 +143,7 @@ export async function uploadXray(formData: FormData) {
     
     console.log("Using reference number:", referenceNumber);
     
-    // Convert file to Buffer for Cloudinary upload
+    // Convert file to Buffer for upload
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
@@ -123,16 +152,16 @@ export async function uploadXray(formData: FormData) {
     let cloudinaryPublicId = '';
     
     try {
-      // Upload image to Cloudinary with folder organization
+      // Upload file to Cloudinary with folder organization
       const cloudinaryResult = await uploadImage(buffer, {
-        folder: 'pneumonia-xrays',
+        folder: isPDF ? 'pneumonia-xray-reports' : 'pneumonia-xrays',
         public_id: `xray-${referenceNumber}`,
-        tags: ['xray', 'pneumonia-detection', referenceNumber]
+        tags: ['xray', 'pneumonia-detection', referenceNumber, isPDF ? 'pdf-report' : 'image']
       });
       
       cloudinaryUrl = cloudinaryResult.url;
       cloudinaryPublicId = cloudinaryResult.public_id;
-      console.log(`Image uploaded to Cloudinary: ${cloudinaryUrl}`);
+      console.log(`File uploaded to Cloudinary: ${cloudinaryUrl}`);
     } catch (cloudinaryError) {
       console.error("Error uploading to Cloudinary:", cloudinaryError);
       // Continue with analysis but note the error
@@ -156,6 +185,81 @@ export async function uploadXray(formData: FormData) {
 
     console.log("Analysis result diagnosis:", analysisResult.diagnosis);
     console.log("Full analysis result:", JSON.stringify(analysisResult, null, 2));
+
+    // Map diagnosis to prediction if prediction is missing
+    console.log("[DEBUG] Before mapping - Has prediction?", !!analysisResult.prediction, "Diagnosis:", analysisResult.diagnosis);
+    if (!analysisResult.prediction && analysisResult.diagnosis) {
+      // Map diagnosis to standard prediction format
+      if (analysisResult.diagnosis === 'Normal' || analysisResult.diagnosis === 'NORMAL') {
+        analysisResult.prediction = 'NORMAL';
+      } else if (analysisResult.diagnosis === 'Pneumonia' || analysisResult.diagnosis === 'PNEUMONIA') {
+        // Map based on pneumoniaType if available
+        if (analysisResult.pneumoniaType === 'Bacterial') {
+          analysisResult.prediction = 'BACTERIAL_PNEUMONIA';
+        } else if (analysisResult.pneumoniaType === 'Viral') {
+          analysisResult.prediction = 'VIRAL_PNEUMONIA';
+        } else {
+          analysisResult.prediction = 'BACTERIAL_PNEUMONIA'; // Default to bacterial
+        }
+      } else {
+        analysisResult.prediction = 'NORMAL'; // Default fallback
+      }
+      console.log("[DEBUG] Mapped diagnosis to prediction:", analysisResult.prediction);
+    } else if (analysisResult.prediction) {
+      console.log("[DEBUG] Prediction already exists:", analysisResult.prediction);
+    } else {
+      console.log("[DEBUG] No diagnosis to map from");
+    }
+
+    // Apply symptom-based confidence adjustment if symptom data is provided
+    let adjustedConfidence = analysisResult.confidence;
+    let symptomScore = 0;
+    let clinicalCorrelation: 'strong' | 'moderate' | 'weak' | 'conflicting' | undefined;
+    let clinicalRecommendation = '';
+    let confidenceBreakdown: any = null;
+    let clinicalSummary = '';
+    
+    if (symptomData) {
+      console.log("Applying symptom-based confidence adjustment...");
+      
+      // Generate clinical summary
+      clinicalSummary = generateClinicalSummary(symptomData);
+      console.log("Clinical summary:", clinicalSummary);
+      
+      // Map model prediction to expected format
+      let modelPrediction: 'NORMAL' | 'BACTERIAL_PNEUMONIA' | 'VIRAL_PNEUMONIA';
+      if (analysisResult.diagnosis === 'NORMAL' || analysisResult.prediction === 'NORMAL') {
+        modelPrediction = 'NORMAL';
+      } else if (analysisResult.pneumoniaType === 'Bacterial' || analysisResult.prediction === 'BACTERIA') {
+        modelPrediction = 'BACTERIAL_PNEUMONIA';
+      } else if (analysisResult.pneumoniaType === 'Viral' || analysisResult.prediction === 'VIRUS') {
+        modelPrediction = 'VIRAL_PNEUMONIA';
+      } else {
+        // Default to model's prediction
+        modelPrediction = 'NORMAL';
+      }
+      
+      // Calculate symptom-adjusted confidence
+      const adjustmentResult = adjustConfidenceWithSymptoms(
+        modelPrediction,
+        analysisResult.confidence ?? 0.80,
+        symptomData
+      );
+      
+      adjustedConfidence = adjustmentResult.adjustedConfidence;
+      symptomScore = adjustmentResult.symptomScore;
+      clinicalCorrelation = adjustmentResult.clinicalCorrelation;
+      clinicalRecommendation = adjustmentResult.recommendation;
+      confidenceBreakdown = adjustmentResult.confidenceBreakdown;
+      
+      console.log("Symptom analysis results:", {
+        originalConfidence: analysisResult.confidence,
+        adjustedConfidence,
+        symptomScore,
+        clinicalCorrelation,
+        clinicalRecommendation
+      });
+    }
 
     // Check if this is a validation-only result (NON_XRAY, COVID, TB)
     const validationOnlyResults = ["NON_XRAY", "COVID", "TB"];
@@ -358,6 +462,15 @@ export async function uploadXray(formData: FormData) {
         });
         
         console.log("Successfully saved scan to database with ID:", xrayScan.id);
+        
+        // Debug: Verify prediction exists before returning
+        console.log("[DEBUG] About to return success - Prediction value:", analysisResult.prediction);
+        console.log("[DEBUG] Return object keys:", {
+          hasPrediction: !!analysisResult.prediction,
+          prediction: analysisResult.prediction,
+          confidence: analysisResult.confidence,
+          diagnosis: analysisResult.diagnosis
+        });
 
         // Return successful result with all data
         return {

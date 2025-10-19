@@ -64,6 +64,79 @@ function LogoutModal({
   );
 }
 
+// PDF Preview Modal Component
+function PDFPreviewModal({ 
+  isOpen, 
+  pdfUrl, 
+  onClose 
+}: { 
+  isOpen: boolean; 
+  pdfUrl: string | null; 
+  onClose: () => void;
+}) {
+  if (!isOpen || !pdfUrl) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Semi-transparent backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      ></div>
+      
+      {/* Modal */}
+      <div className="relative z-10 bg-white rounded-lg shadow-2xl max-w-4xl w-full mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+          <h2 className="text-xl font-bold text-gray-800">PDF Preview</h2>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-200 rounded-lg"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </motion.button>
+        </div>
+        
+        {/* PDF Viewer */}
+        <div className="flex-1 overflow-y-auto bg-gray-100">
+          <iframe
+            src={pdfUrl}
+            className="w-full h-full"
+            title="PDF Preview"
+          />
+        </div>
+        
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download
+          </a>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400 transition-colors"
+          >
+            Close
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // New Stat Card Component
 function StatCard({ 
   title, 
@@ -236,8 +309,10 @@ function DonutChart({ normalCount, pneumoniaCount }: { normalCount: number; pneu
   );
 }
 
-// Simple Bar Chart Component
+// Enhanced Bar Chart Component with Graph Type Options
 function BarChart({ title, data }: { title: string; data: { name: string; value: number }[] }) {
+  const [chartType, setChartType] = useState<'horizontal' | 'vertical' | 'pie'>('horizontal');
+
   if (!data || data.length === 0) {
     return (
       <div>
@@ -248,27 +323,227 @@ function BarChart({ title, data }: { title: string; data: { name: string; value:
   }
 
   const maxValue = Math.max(...data.map(d => d.value), 0);
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  
+  // Color palette for pie chart
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#22c55e'];
 
   return (
-    <div>
-      <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
-      <div className="space-y-3">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center">
-            <div className="w-24 text-sm text-gray-600 truncate pr-2">{item.name}</div>
-            <div className="flex-1 bg-gray-200 rounded-full h-5">
-              <motion.div
-                className="bg-indigo-500 h-5 rounded-full flex items-center justify-end pr-2"
-                initial={{ width: 0 }}
-                animate={{ width: `${(item.value / maxValue) * 100}%` }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <span className="text-white text-xs font-medium">{item.value}</span>
-              </motion.div>
-            </div>
-          </div>
-        ))}
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-800">{title}</h3>
+        <div className="flex gap-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setChartType('horizontal')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              chartType === 'horizontal'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Horizontal Bar"
+          >
+            <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h2m0-14h4a2 2 0 012 2v12a2 2 0 01-2 2h-4m0-14h4a2 2 0 012 2v12a2 2 0 01-2 2h-4" />
+            </svg>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setChartType('vertical')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              chartType === 'vertical'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Vertical Bars"
+          >
+            <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setChartType('pie')}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              chartType === 'pie'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Pie Chart"
+          >
+            <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V2m6 4l-4-4m6 10h4m-4 6l4 4m-10-4v4m-6-4l-4 4" />
+            </svg>
+          </motion.button>
+        </div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {chartType === 'horizontal' && (
+          <motion.div
+            key="horizontal"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-3"
+          >
+            {data.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div className="w-20 text-xs text-gray-600 truncate font-medium">{item.name}</div>
+                <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                  <motion.div
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 h-6 rounded-full flex items-center justify-end pr-3 shadow-md"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(item.value / maxValue) * 100}%` }}
+                    transition={{ duration: 0.6, delay: index * 0.08 }}
+                  >
+                    <span className="text-white text-xs font-bold">{item.value}</span>
+                  </motion.div>
+                </div>
+              </div>
+            ))}
+            {/* Legend */}
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-700 mb-2">Legend</p>
+              <div className="flex flex-wrap gap-3">
+                {data.map((item, index) => (
+                  <div key={index} className="flex items-center gap-1">
+                    <div 
+                      className="w-2 h-2 rounded-full" 
+                      style={{ 
+                        backgroundColor: colors[index % colors.length]
+                      }}
+                    ></div>
+                    <span className="text-xs text-gray-600">{item.name}: {item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {chartType === 'vertical' && (
+          <motion.div
+            key="vertical"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col gap-4"
+          >
+            <div className="w-full overflow-x-auto pb-2">
+              <div className="flex items-end justify-start gap-3 h-56 bg-gradient-to-t from-indigo-50 via-indigo-25 to-transparent rounded-lg p-6 min-w-max">
+                {data.map((item, index) => (
+                  <div key={index} className="flex flex-col items-center gap-2 h-full justify-end" style={{ minWidth: `${Math.max(60, 80)}px` }}>
+                    <div className="text-xs font-bold text-gray-800 h-5">{item.value}</div>
+                    <motion.div
+                      className="rounded-t-lg shadow-md hover:shadow-lg transition-shadow"
+                      style={{
+                        backgroundColor: colors[index % colors.length],
+                        width: '100%',
+                        minHeight: `${Math.max(8, (item.value / maxValue) * 100)}%`,
+                      }}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${(item.value / maxValue) * 100}%` }}
+                      transition={{ duration: 0.6, delay: index * 0.08, type: 'spring', stiffness: 100 }}
+                      whileHover={{ scale: 1.05 }}
+                    ></motion.div>
+                    <span className="text-xs font-semibold text-gray-700 text-center w-full mt-2 whitespace-nowrap overflow-hidden text-ellipsis" title={item.name}>
+                      {item.name.length > 12 ? item.name.substring(0, 10) + '...' : item.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Legend with better color display */}
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-700 mb-3">Legend</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {data.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" 
+                      style={{ 
+                        backgroundColor: colors[index % colors.length]
+                      }}
+                    ></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-600 truncate font-medium">{item.name}</p>
+                      <p className="text-xs text-gray-500">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {chartType === 'pie' && (
+          <motion.div
+            key="pie"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <svg width="150" height="150" viewBox="0 0 150 150" className="drop-shadow-lg">
+              {data.map((item, index) => {
+                const percentage = (item.value / total) * 100;
+                const sliceStartAngle = data.slice(0, index).reduce((sum, d) => sum + (d.value / total) * 360, 0);
+                const sliceAngle = (item.value / total) * 360;
+                const startRad = (sliceStartAngle - 90) * (Math.PI / 180);
+                const endRad = (sliceStartAngle + sliceAngle - 90) * (Math.PI / 180);
+                
+                const x1 = 75 + 60 * Math.cos(startRad);
+                const y1 = 75 + 60 * Math.sin(startRad);
+                const x2 = 75 + 60 * Math.cos(endRad);
+                const y2 = 75 + 60 * Math.sin(endRad);
+                const largeArc = sliceAngle > 180 ? 1 : 0;
+                
+                const path = `M 75 75 L ${x1} ${y1} A 60 60 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
+                return (
+                  <motion.path
+                    key={index}
+                    d={path}
+                    fill={colors[index % colors.length]}
+                    stroke="white"
+                    strokeWidth="2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                  />
+                );
+              })}
+            </svg>
+            {/* Legend */}
+            <div className="w-full">
+              <p className="text-xs font-semibold text-gray-700 mb-2">Legend</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                {data.map((item, index) => {
+                  const percentage = ((item.value / total) * 100).toFixed(1);
+                  return (
+                    <div key={index} className="flex items-center gap-1.5">
+                      <div 
+                        className="w-2.5 h-2.5 rounded-full" 
+                        style={{ 
+                          backgroundColor: colors[index % colors.length]
+                        }}
+                      ></div>
+                      <span className="text-xs text-gray-600">{item.name}: {item.value} ({percentage}%)</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -414,6 +689,10 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
   const [allScansTotalPages, setAllScansTotalPages] = useState(1);
   const ALL_SCANS_PER_PAGE = 8;
   const [allScansSort, setAllScansSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+  
+  // Add state for PDF preview modal
+  const [previewPDF, setPreviewPDF] = useState<string | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   
   // Fetch dashboard data
   const fetchData = async () => {
@@ -1031,20 +1310,38 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link 
-                              href={`/dashboard/doctor/scans/${scan.id}`} 
-                              className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold group"
-                            >
-                              View
-                              <svg 
-                                className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
+                            <div className="flex items-center justify-end gap-2">
+                              {scan.imageUrl && scan.imageUrl.includes('.pdf') && (
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => {
+                                    setPreviewPDF(scan.imageUrl);
+                                    setShowPreviewModal(true);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-semibold group px-2 py-1 hover:bg-amber-50 rounded-lg transition-all"
+                                  title="Preview PDF"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                  </svg>
+                                </motion.button>
+                              )}
+                              <Link 
+                                href={`/dashboard/doctor/scans/${scan.id}`} 
+                                className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold group px-2 py-1 hover:bg-indigo-50 rounded-lg transition-all"
                               >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </Link>
+                                View
+                                <svg 
+                                  className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </Link>
+                            </div>
                           </td>
                         </motion.tr>
                       ))}
@@ -1099,6 +1396,16 @@ export default function DoctorDashboardClient({ user }: { user: { id: string; ro
         isOpen={isLogoutModalOpen} 
         onClose={() => setIsLogoutModalOpen(false)} 
         onConfirm={handleLogout} 
+      />
+      
+      {/* PDF Preview Modal */}
+      <PDFPreviewModal 
+        isOpen={showPreviewModal}
+        pdfUrl={previewPDF}
+        onClose={() => {
+          setShowPreviewModal(false);
+          setPreviewPDF(null);
+        }}
       />
     </main>
   );
