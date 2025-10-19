@@ -64,12 +64,14 @@ export default function UserManagement() {
 
   const handleAddUser = () => {
     setIsEditMode(false);
+    // Generate auto Doctor ID
+    const generatedDoctorId = `DOC-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     setCurrentUser({
       name: "",
       email: "",
       password: "",
       role: "DOCTOR",
-      doctorId: "",
+      doctorId: generatedDoctorId,
     });
     setIsModalOpen(true);
   };
@@ -388,14 +390,28 @@ export default function UserManagement() {
                     >
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Doctor ID
+                        {!isEditMode && <span className="text-indigo-600 font-normal text-xs ml-1">(Auto-generated)</span>}
                       </label>
                       <input
                         type="text"
                         value={currentUser.doctorId || ""}
-                        onChange={(e) => setCurrentUser({ ...currentUser, doctorId: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 transition-all"
+                        disabled={!isEditMode}
+                        onChange={(e) => isEditMode && setCurrentUser({ ...currentUser, doctorId: e.target.value })}
+                        className={`w-full px-4 py-3 border rounded-xl transition-all font-mono text-sm ${
+                          !isEditMode
+                            ? "border-gray-300 bg-gray-50 text-gray-700 cursor-not-allowed"
+                            : "border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
+                        }`}
                         placeholder="Enter doctor ID"
                       />
+                      {!isEditMode && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          This ID is automatically generated for unique identification
+                        </p>
+                      )}
                     </motion.div>
                   )}
                   
