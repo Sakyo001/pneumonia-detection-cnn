@@ -5,8 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { SymptomData, VitalSigns } from './symptom-scoring';
 
 interface EnhancedPatientInfoFormProps {
-  patientName: string;
-  setPatientName: (v: string) => void;
+  patientFirstName: string;
+  setPatientFirstName: (v: string) => void;
+  patientMiddleName: string;
+  setPatientMiddleName: (v: string) => void;
+  patientLastName: string;
+  setPatientLastName: (v: string) => void;
   patientAge: string;
   setPatientAge: (v: string) => void;
   patientGender: string;
@@ -35,7 +39,9 @@ interface EnhancedPatientInfoFormProps {
 }
 
 const EnhancedPatientInfoForm: React.FC<EnhancedPatientInfoFormProps> = ({
-  patientName, setPatientName,
+  patientFirstName, setPatientFirstName,
+  patientMiddleName, setPatientMiddleName,
+  patientLastName, setPatientLastName,
   patientAge, setPatientAge,
   patientGender, setPatientGender,
   referenceNumber,
@@ -92,10 +98,10 @@ const EnhancedPatientInfoForm: React.FC<EnhancedPatientInfoFormProps> = ({
           <h3 className="text-xl font-bold text-gray-800">Patient Information</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="patientName" className="block text-sm font-semibold text-gray-700 mb-2">
-              Patient Name
+            <label htmlFor="patientFirstName" className="block text-sm font-semibold text-gray-700 mb-2">
+              First Name <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -104,16 +110,62 @@ const EnhancedPatientInfoForm: React.FC<EnhancedPatientInfoFormProps> = ({
                 </svg>
               </div>
               <input
-                id="patientName"
+                id="patientFirstName"
                 type="text"
-                value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
+                value={patientFirstName}
+                onChange={(e) => setPatientFirstName(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                placeholder="Enter patient name"
+                placeholder="Enter first name"
+                required
               />
             </div>
           </div>
 
+          <div>
+            <label htmlFor="patientMiddleName" className="block text-sm font-semibold text-gray-700 mb-2">
+              Middle Name
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <input
+                id="patientMiddleName"
+                type="text"
+                value={patientMiddleName}
+                onChange={(e) => setPatientMiddleName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                placeholder="Enter middle name (optional)"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="patientLastName" className="block text-sm font-semibold text-gray-700 mb-2">
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <input
+                id="patientLastName"
+                type="text"
+                value={patientLastName}
+                onChange={(e) => setPatientLastName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border-2 text-gray-700 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                placeholder="Enter last name"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label htmlFor="patientAge" className="block text-sm font-semibold text-gray-700 mb-2">
               Age

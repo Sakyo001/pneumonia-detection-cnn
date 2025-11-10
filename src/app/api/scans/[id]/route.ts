@@ -34,20 +34,43 @@ export async function GET(
     }
 
     // Fetch scan with related data
-    const scan = await prisma.xrayScan.findUnique({
+    // Try to find by ID first, then by referenceNumber
+    let scan = await prisma.xrayScan.findUnique({
       where: {
         id: scanId,
       },
       include: {
         patient: {
           select: {
-            name: true,
+            firstName: true,
+            middleName: true,
+            lastName: true,
             doctorId: true
           }
         },
         metadata: true
       }
     });
+    
+    // If not found by ID, try by referenceNumber
+    if (!scan) {
+      scan = await prisma.xrayScan.findUnique({
+        where: {
+          referenceNumber: scanId,
+        },
+        include: {
+          patient: {
+            select: {
+              firstName: true,
+              middleName: true,
+              lastName: true,
+              doctorId: true
+            }
+          },
+          metadata: true
+        }
+      });
+    }
     
     // Check if scan exists
     if (!scan) {
@@ -74,7 +97,7 @@ export async function GET(
     // Format the scan data for the response
     const formattedScan = {
       id: scan.id,
-      patientName: scan.patient.name,
+      patientName: [scan.patient.firstName, scan.patient.middleName, scan.patient.lastName].filter(Boolean).join(' '),
       date: scan.createdAt.toISOString(),
       result: scan.result,
       confidence: scan.metadata?.confidence ? Math.round(scan.metadata.confidence * 100) : null,

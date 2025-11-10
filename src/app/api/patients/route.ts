@@ -21,15 +21,25 @@ export async function GET() {
       },
       select: {
         id: true,
-        name: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
         referenceNumber: true
       },
       orderBy: {
-        name: 'asc'
+        firstName: 'asc'
       }
     });
     
-    return NextResponse.json({ patients });
+    // Combine name fields for response
+    const patientsWithFullName = patients.map(patient => ({
+      ...patient,
+      name: [patient.firstName, patient.middleName, patient.lastName]
+        .filter(Boolean)
+        .join(' ')
+    }));
+    
+    return NextResponse.json({ patients: patientsWithFullName });
   } catch (error) {
     console.error("Error fetching patients:", error);
     return NextResponse.json(

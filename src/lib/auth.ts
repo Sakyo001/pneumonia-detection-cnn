@@ -126,7 +126,9 @@ export async function seedUsers() {
       // Create patient record linked to Dr. Smith
       await prisma.patient.create({
         data: {
-          name: 'John Doe',
+          firstName: 'John',
+          middleName: '',
+          lastName: 'Doe',
           referenceNumber: 'PAT-001',
           doctorId: (await prisma.user.findFirst({ 
             where: { doctorId: 'DOC12345' } 
@@ -137,7 +139,9 @@ export async function seedUsers() {
       // Create another patient record linked to Dr. Santos
       await prisma.patient.create({
         data: {
-          name: 'Maria Garcia',
+          firstName: 'Jane',
+          middleName: 'A.',
+          lastName: 'Santos',
           referenceNumber: 'PAT-002',
           doctorId: (await prisma.user.findFirst({ 
             where: { doctorId: 'DOC67890' } 

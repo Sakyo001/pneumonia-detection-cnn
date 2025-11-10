@@ -24,6 +24,9 @@ interface PneumoniaResponseData {
   patient: {
     id: string;
     name: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
     referenceNumber: string;
   };
   doctor: {
@@ -97,7 +100,7 @@ export async function GET(request: NextRequest) {
         createdAt: scan.createdAt,
         patient: {
           id: scan.patient.id,
-          name: scan.patient.name,
+          name: [scan.patient.firstName, scan.patient.middleName, scan.patient.lastName].filter(Boolean).join(' '),
           referenceNumber: scan.patient.referenceNumber,
         },
         doctor: doctor,
@@ -227,7 +230,7 @@ export async function PUT(request: NextRequest) {
       createdAt: result.scan.createdAt,
       patient: {
         id: result.scan.patient.id,
-        name: result.scan.patient.name,
+        name: [result.scan.patient.firstName, result.scan.patient.middleName, result.scan.patient.lastName].filter(Boolean).join(' '),
         referenceNumber: result.scan.patient.referenceNumber,
       },
       doctor: result.doctor || {

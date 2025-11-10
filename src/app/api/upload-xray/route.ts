@@ -69,7 +69,10 @@ export async function POST(request: NextRequest) {
     }
     
     // Extract patient information
-    const patientName = formData.get('patientName') as string;
+    const patientFirstName = formData.get('patientFirstName') as string;
+    const patientMiddleName = formData.get('patientMiddleName') as string;
+    const patientLastName = formData.get('patientLastName') as string;
+    const patientName = [patientFirstName, patientMiddleName, patientLastName].filter(Boolean).join(' ');
     const patientAge = formData.get('patientAge') as string;
     const patientGender = formData.get('patientGender') as string;
     const patientNotes = formData.get('patientNotes') as string;
@@ -311,7 +314,8 @@ export async function POST(request: NextRequest) {
     // Check if patient exists or create new one
     let patient = await prisma.patient.findFirst({
       where: {
-        name: patientName,
+        firstName: patientFirstName,
+        lastName: patientLastName,
         doctorId: doctorId
       }
     });
@@ -321,7 +325,9 @@ export async function POST(request: NextRequest) {
       
       patient = await prisma.patient.create({
         data: {
-          name: patientName,
+          firstName: patientFirstName,
+          middleName: patientMiddleName || null,
+          lastName: patientLastName,
           referenceNumber: patientRefNumber,
           age: patientAge ? parseInt(patientAge, 10) : null,
           gender: patientGender,
@@ -334,7 +340,7 @@ export async function POST(request: NextRequest) {
           region: region,
           city: city,
           barangay: barangay
-        } as any
+        }
       });
     } else {
       patient = await prisma.patient.update({

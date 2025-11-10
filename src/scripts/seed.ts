@@ -19,7 +19,9 @@ async function main() {
   // Create a patient with unique reference number
   const patient = await prisma.patient.create({
     data: {
-      name: 'Jane Doe',
+      firstName: 'Alice',
+      middleName: 'B.',
+      lastName: 'Johnson',
       referenceNumber: `PT-${timestamp}-${random}`,
       doctorId: doctor.id,
     },

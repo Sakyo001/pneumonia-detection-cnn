@@ -47,7 +47,7 @@ export async function GET(
           }
         }
       });
-    } catch (queryError) {
+    } catch (queryError: any) {
       console.error('Database query failed:', queryError);
       if (queryError instanceof Prisma.PrismaClientKnownRequestError) {
         return Response.json(
@@ -83,7 +83,7 @@ export async function GET(
       pneumonia_type: xrayScan.metadata?.pneumoniaType || null,
       severity: xrayScan.metadata?.severity || null,
       recommended_action: xrayScan.metadata?.recommendedAction || null,
-      patient_name: xrayScan.patient?.name || 'Unknown Patient'
+      patient_name: xrayScan.patient ? [xrayScan.patient.firstName, xrayScan.patient.middleName, xrayScan.patient.lastName].filter(Boolean).join(' ') : 'Unknown Patient'
     };
 
     console.log('Sending response:', result);

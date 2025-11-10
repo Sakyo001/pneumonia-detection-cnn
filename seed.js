@@ -108,7 +108,9 @@ async function main() {
     if (patient1Count === 0 && doctor1) {
       await prisma.patient.create({
         data: {
-          name: 'John Doe',
+          firstName: 'John',
+          middleName: '',
+          lastName: 'Doe',
           referenceNumber: 'PAT-001',
           dateOfBirth: new Date('1985-05-15'),
           doctorId: doctor1.id,
@@ -120,7 +122,9 @@ async function main() {
     if (patient2Count === 0 && doctor2) {
       await prisma.patient.create({
         data: {
-          name: 'Maria Garcia',
+          firstName: 'Jane',
+          middleName: 'A.',
+          lastName: 'Santos',
           referenceNumber: 'PAT-002',
           dateOfBirth: new Date('1992-08-21'),
           doctorId: doctor2.id,

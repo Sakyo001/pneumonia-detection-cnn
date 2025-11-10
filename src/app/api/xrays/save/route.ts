@@ -27,10 +27,17 @@ export async function POST(request: Request) {
     // Find or create patient
     let patient;
     try {
+      // Parse patientName into components
+      const nameParts = (data.patientName || '').trim().split(' ').filter(Boolean);
+      const firstName = nameParts[0] || 'Unknown';
+      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : firstName;
+      const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : null;
+      
       // Check if patient exists by name
       patient = await prisma.patient.findFirst({
         where: {
-          name: data.patientName,
+          firstName: firstName,
+          lastName: lastName,
           doctorId: user.id
         }
       });
@@ -43,7 +50,9 @@ export async function POST(request: Request) {
           
         patient = await prisma.patient.create({
           data: {
-            name: data.patientName,
+            firstName: firstName,
+            middleName: middleName,
+            lastName: lastName,
             referenceNumber: `PAT-${Date.now().toString().slice(-6)}`,
             doctorId: user.id
           }

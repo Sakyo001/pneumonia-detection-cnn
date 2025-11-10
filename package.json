@@ -19,7 +19,7 @@
     "vercel-build": "npm run clean && prisma generate && next build"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.19.0",
     "@react-pdf/renderer": "^4.3.0",
     "@stackframe/stack": "^2.8.1",
     "@tremor/react": "^3.18.7",
@@ -54,7 +54,7 @@
     "@types/uuid": "^10.0.0",
     "eslint": "9.32.0",
     "eslint-config-next": "15.4.4",
-    "prisma": "^6.5.0",
+    "prisma": "^6.19.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"
