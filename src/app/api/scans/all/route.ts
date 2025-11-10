@@ -82,7 +82,9 @@ export async function GET(req: NextRequest) {
         status: true,
         patient: {
           select: {
-            name: true
+            firstName: true,
+            middleName: true,
+            lastName: true
           }
         },
         metadata: {
@@ -147,7 +149,7 @@ export async function GET(req: NextRequest) {
     // Format scans for response
     const formattedScans = scans.map(scan => ({
       id: scan.id,
-      patientName: scan.patient.name,
+      patientName: [scan.patient.firstName, scan.patient.middleName, scan.patient.lastName].filter(Boolean).join(' '),
       date: scan.createdAt.toISOString(),
       result: scan.result || 'Unknown',
       confidence: scan.metadata?.confidence ? Math.round(scan.metadata.confidence * 100) : 0,

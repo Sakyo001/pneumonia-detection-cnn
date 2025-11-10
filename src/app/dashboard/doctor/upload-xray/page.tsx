@@ -129,7 +129,9 @@ export default function UploadXrayPage() {
   const totalSteps = 4;
   
   // Patient information
-  const [patientName, setPatientName] = useState("");
+  const [patientFirstName, setPatientFirstName] = useState("");
+  const [patientMiddleName, setPatientMiddleName] = useState("");
+  const [patientLastName, setPatientLastName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [patientGender, setPatientGender] = useState("male");
   const [patientNotes, setPatientNotes] = useState("");
@@ -420,8 +422,8 @@ export default function UploadXrayPage() {
       return;
     }
 
-    if (!patientName.trim()) {
-      setError("Please enter the patient's name.");
+    if (!patientFirstName.trim() || !patientLastName.trim()) {
+      setError("Please enter the patient's first and last name.");
       return;
     }
     
@@ -431,7 +433,9 @@ export default function UploadXrayPage() {
     try {
       const formData = new FormData();
       formData.append("xrayFile", selectedFile);
-      formData.append("patientName", patientName);
+      formData.append("patientFirstName", patientFirstName);
+      formData.append("patientMiddleName", patientMiddleName);
+      formData.append("patientLastName", patientLastName);
       formData.append("patientAge", patientAge);
       formData.append("patientGender", patientGender);
       formData.append("patientNotes", patientNotes);
@@ -491,7 +495,9 @@ export default function UploadXrayPage() {
     setPreviewUrl(null);
     setAnalysisResult(null);
     setError(null);
-    setPatientName("");
+    setPatientFirstName("");
+    setPatientMiddleName("");
+    setPatientLastName("");
     setPatientAge("");
     setPatientGender("male");
     setPatientNotes("");
@@ -660,9 +666,30 @@ export default function UploadXrayPage() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 lg:p-8"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            {/* Left: Patient Info Form always visible */}
+          {/* Check if we have a medical result (non-validation) to show full-width */}
+          {analysisResult && !["NON_XRAY", "COVID", "TB", "NON_XRAY_SAFETY"].includes(analysisResult.prediction || "") ? (
+            /* Full-width results for medical diagnoses */
             <div className="space-y-6">
+              <AnalysisResultDisplay
+                analysisResult={analysisResult}
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                totalSteps={totalSteps}
+                previewUrl={previewUrl}
+                patientName={[patientFirstName, patientMiddleName, patientLastName].filter(Boolean).join(' ')}
+                patientAge={patientAge}
+                patientGender={patientGender}
+                patientNotes={patientNotes}
+                medicalHistory={medicalHistory}
+                reportedSymptoms={reportedSymptoms}
+                resetForm={resetForm}
+              />
+            </div>
+          ) : (
+            /* Two-column layout for form + validation results or upload */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left: Patient Info Form always visible */}
+              <div className="space-y-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -672,8 +699,12 @@ export default function UploadXrayPage() {
                 <h3 className="text-xl font-semibold text-gray-900">Patient Information</h3>
               </div>
               <EnhancedPatientInfoForm
-                patientName={patientName}
-                setPatientName={setPatientName}
+                patientFirstName={patientFirstName}
+                setPatientFirstName={setPatientFirstName}
+                patientMiddleName={patientMiddleName}
+                setPatientMiddleName={setPatientMiddleName}
+                patientLastName={patientLastName}
+                setPatientLastName={setPatientLastName}
                 patientAge={patientAge}
                 setPatientAge={setPatientAge}
                 patientGender={patientGender}
@@ -731,7 +762,7 @@ export default function UploadXrayPage() {
                   setCurrentStep={setCurrentStep}
                   totalSteps={totalSteps}
                   previewUrl={previewUrl}
-                  patientName={patientName}
+                  patientName={[patientFirstName, patientMiddleName, patientLastName].filter(Boolean).join(' ')}
                   patientAge={patientAge}
                   patientGender={patientGender}
                   patientNotes={patientNotes}
@@ -742,6 +773,7 @@ export default function UploadXrayPage() {
               )}
             </div>
           </div>
+          )}
           
           {/* Server status and submit button (only show before analysis) */}
           {!analysisResult && (
@@ -857,7 +889,7 @@ export default function UploadXrayPage() {
           analysisResult={analysisResult} 
           doctorInfo={doctorInfo} 
           printDate={printDate} 
-          patientName={patientName} 
+          patientName={[patientFirstName, patientMiddleName, patientLastName].filter(Boolean).join(' ')} 
           patientAge={patientAge} 
           patientGender={patientGender} 
           patientNotes={patientNotes} 

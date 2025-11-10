@@ -104,7 +104,9 @@ export async function uploadXray(formData: FormData) {
     console.log(`Processing ${isPDF ? 'PDF' : 'image'} file: ${file.name}`);
     
     // Extract patient information
-    const patientName = formData.get('patientName') as string;
+    const patientFirstName = formData.get('patientFirstName') as string;
+    const patientMiddleName = formData.get('patientMiddleName') as string;
+    const patientLastName = formData.get('patientLastName') as string;
     const patientAge = formData.get('patientAge') as string;
     const patientGender = formData.get('patientGender') as string;
     const patientNotes = formData.get('patientNotes') as string;
@@ -114,6 +116,11 @@ export async function uploadXray(formData: FormData) {
     const city = formData.get('city') as string;
     const barangay = formData.get('barangay') as string;
     const reportedSymptoms = formData.get('reportedSymptoms') as string;
+    
+    // Build full patient name for display
+    const patientName = [patientFirstName, patientMiddleName, patientLastName]
+      .filter(Boolean)
+      .join(' ');
     
     // Parse enhanced symptom data
     const symptomDataString = formData.get('symptomData') as string;
@@ -368,7 +375,8 @@ export async function uploadXray(formData: FormData) {
     // First, check if this patient already exists by name with this doctor
     let patient = await prisma.patient.findFirst({
       where: {
-        name: patientName,
+        firstName: patientFirstName,
+        lastName: patientLastName,
         doctorId: doctorId
       }
     });
@@ -380,7 +388,9 @@ export async function uploadXray(formData: FormData) {
       
       patient = await prisma.patient.create({
         data: {
-          name: patientName,
+          firstName: patientFirstName,
+          middleName: patientMiddleName || null,
+          lastName: patientLastName,
           referenceNumber: patientRefNumber,
           age: patientAge ? parseInt(patientAge, 10) : null,
           gender: patientGender,

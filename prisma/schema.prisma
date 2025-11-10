@@ -9,6 +9,37 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Patient {
+  id              String     @id @default(uuid())
+  firstName       String     @map("first_name")
+  middleName      String?    @map("middle_name")
+  lastName        String     @map("last_name")
+  referenceNumber String     @unique
+  age             Int?
+  gender          String?
+  doctorId        String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  location        String?
+  region          String?
+  city            String?
+  barangay        String?
+  doctor          User       @relation("DoctorToPatient", fields: [doctorId], references: [id])
+  xrayScans       XrayScan[]
+}
+
+model ScanMetadata {
+  id                String   @id @default(uuid())
+  scanId            String   @unique
+  confidence        Float
+  pneumoniaType     String?
+  severity          String?
+  recommendedAction String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  XrayScan          XrayScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+}
+
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
@@ -20,23 +51,6 @@ model User {
   updatedAt DateTime   @updatedAt
   patients  Patient[]  @relation("DoctorToPatient")
   xrayScans XrayScan[] @relation("DoctorToScan")
-}
-
-model Patient {
-  id              String     @id @default(uuid())
-  name            String
-  referenceNumber String     @unique
-  age             Int?
-  gender          String?
-  doctorId        String
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  doctor          User       @relation("DoctorToPatient", fields: [doctorId], references: [id])
-  xrayScans       XrayScan[]
-  location        String?
-  region          String?
-  city            String?
-  barangay        String?
 }
 
 model XrayScan {
@@ -55,26 +69,14 @@ model XrayScan {
   recommendedAction String?
   severity          String?
   letter            String?
-  symptoms          String?       // JSON array of reported symptoms
-  metadata          ScanMetadata?
-  doctor            User          @relation("DoctorToScan", fields: [doctorId], references: [id])
-  patient           Patient       @relation(fields: [patientId], references: [id])
+  symptoms          String?
   location          String?
   region            String?
   city              String?
   barangay          String?
-}
-
-model ScanMetadata {
-  id                String   @id @default(uuid())
-  scanId            String   @unique
-  confidence        Float
-  pneumoniaType     String?
-  severity          String?
-  recommendedAction String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  scan              XrayScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  metadata          ScanMetadata?
+  doctor            User          @relation("DoctorToScan", fields: [doctorId], references: [id])
+  patient           Patient       @relation(fields: [patientId], references: [id])
 }
 
 enum UserRole {
