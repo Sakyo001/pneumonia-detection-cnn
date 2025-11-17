@@ -62,7 +62,7 @@ const PrintOnlyReport: React.FC<PrintOnlyReportProps> = ({
         <p><strong>Name:</strong> {patientName}</p>
         <p><strong>Age:</strong> {patientAge} years</p>
         <p><strong>Gender:</strong> {patientGender}</p>
-        <p><strong>Location:</strong> {patientLocation}</p>
+        {patientLocation && <p><strong>Location:</strong> {patientLocation}</p>}
         {patientNotes && <p><strong>Clinical Notes:</strong> {patientNotes}</p>}
       </div>
 

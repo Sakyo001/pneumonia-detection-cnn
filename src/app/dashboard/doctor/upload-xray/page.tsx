@@ -290,11 +290,9 @@ export default function UploadXrayPage() {
 
   // Update patient location
   useEffect(() => {
-    if (selectedRegion && selectedCity && selectedBarangay) {
-      setPatientLocation(`${selectedBarangay}, ${selectedCity}, ${selectedRegion}`);
-    } else {
-      setPatientLocation("");
-    }
+    // Build location string from available fields
+    const locationParts = [selectedBarangay, selectedCity, selectedRegion].filter(Boolean);
+    setPatientLocation(locationParts.join(', '));
   }, [selectedRegion, selectedCity, selectedBarangay]);
 
   // Utility functions
@@ -894,7 +892,10 @@ export default function UploadXrayPage() {
           patientGender={patientGender} 
           patientNotes={patientNotes} 
           patientLocation={patientLocation} 
-          previewUrl={previewUrl} 
+          previewUrl={previewUrl}
+          medicalHistory={medicalHistory}
+          reportedSymptoms={reportedSymptoms}
+          customSymptom={customSymptom}
         />
       )}
     </main>
