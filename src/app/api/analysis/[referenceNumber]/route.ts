@@ -47,7 +47,7 @@ export async function GET(
           }
         }
       });
-    } catch (queryError: any) {
+    } catch (queryError) {
       console.error('Database query failed:', queryError);
       if (queryError instanceof Prisma.PrismaClientKnownRequestError) {
         return Response.json(
